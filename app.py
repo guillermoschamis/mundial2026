@@ -336,6 +336,88 @@ def sync_horarios():
     return jsonify({"ok":True,"actualizados":actualizados})
 
 
+def calcular_posiciones_grupo(grupo, db):
+    """Devuelve equipos del grupo ordenados por puntos, dif goles, goles favor."""
+    partidos = db.execute(
+        "SELECT * FROM partidos WHERE grupo=? AND resultado IS NOT NULL", (grupo,)
+    ).fetchall()
+    equipos = {}
+    for p in partidos:
+        for eq, rival, es_local in [(p["local"], p["visitante"], True), (p["visitante"], p["local"], False)]:
+            if eq not in equipos:
+                equipos[eq] = {"pts":0,"gj":0,"gf":0,"gc":0}
+            equipos[eq]["gj"] += 1
+            if (p["resultado"] == "1" and es_local) or (p["resultado"] == "2" and not es_local):
+                equipos[eq]["pts"] += 3
+            elif p["resultado"] == "E":
+                equipos[eq]["pts"] += 1
+    tabla = sorted(equipos.items(), key=lambda x: (-x[1]["pts"], x[0]))
+    return tabla  # [(nombre, stats), ...]
+
+def grupo_completo(grupo, db):
+    """Verifica si todos los partidos del grupo tienen resultado."""
+    total = db.execute("SELECT COUNT(*) FROM partidos WHERE grupo=?", (grupo,)).fetchone()[0]
+    con_resultado = db.execute("SELECT COUNT(*) FROM partidos WHERE grupo=? AND resultado IS NOT NULL", (grupo,)).fetchone()[0]
+    return total > 0 and total == con_resultado
+
+@app.route("/api/generar-16avos", methods=["POST"])
+def generar_16avos():
+    if not session.get("es_admin"): return jsonify({"error":"No autorizado"}), 403
+    db = get_db()
+
+    # Verificar que todos los grupos estén completos
+    grupos = [g["grupo"] for g in db.execute("SELECT DISTINCT grupo FROM partidos WHERE grupo NOT IN ('R32','R16','QF','SF','F') ORDER BY grupo").fetchall()]
+    incompletos = [g for g in grupos if not grupo_completo(g, db)]
+    if incompletos:
+        return jsonify({"error": f"Grupos sin completar: {', '.join(incompletos)}"}), 400
+
+    # Calcular 1° y 2° de cada grupo
+    primeros = {}
+    segundos = {}
+    terceros = {}
+    for g in grupos:
+        tabla = calcular_posiciones_grupo(g, db)
+        if len(tabla) >= 1: primeros[g] = tabla[0][0]
+        if len(tabla) >= 2: segundos[g] = tabla[1][0]
+        if len(tabla) >= 3: terceros[g] = (tabla[2][0], tabla[2][1])  # (nombre, stats)
+
+    # Elegir los 8 mejores terceros
+    todos_terceros = sorted(
+        [(g, n, s) for g, (n, s) in terceros.items()],
+        key=lambda x: (-x[2]["pts"], x[0])
+    )
+    mejores_terceros = [t[1] for t in todos_terceros[:8]]
+
+    def t3(i):
+        return mejores_terceros[i] if i < len(mejores_terceros) else "Mejor 3°"
+
+    # Cruces oficiales R32 (basado en fixture FIFA 2026)
+    cruces = [
+        ("R32", segundos.get("A","2°A"), segundos.get("B","2°B"),    "2026-06-28T16:00:00+00:00"),
+        ("R32", primeros.get("E","1°E"), t3(0),                       "2026-06-29T19:30:00+00:00"),
+        ("R32", primeros.get("F","1°F"), segundos.get("C","2°C"),     "2026-06-29T23:00:00+00:00"),
+        ("R32", primeros.get("C","1°C"), segundos.get("F","2°F"),     "2026-06-29T16:00:00+00:00"),
+        ("R32", primeros.get("I","1°I"), t3(1),                       "2026-06-30T21:00:00+00:00"),
+        ("R32", segundos.get("E","2°E"), segundos.get("I","2°I"),     "2026-06-30T16:00:00+00:00"),
+        ("R32", primeros.get("A","1°A"), t3(2),                       "2026-06-30T23:00:00+00:00"),
+        ("R32", primeros.get("L","1°L"), t3(3),                       "2026-07-01T16:00:00+00:00"),
+        ("R32", primeros.get("D","1°D"), t3(4),                       "2026-07-01T21:00:00+00:00"),
+        ("R32", primeros.get("G","1°G"), t3(5),                       "2026-07-01T17:00:00+00:00"),
+        ("R32", segundos.get("K","2°K"), segundos.get("L","2°L"),     "2026-07-02T23:00:00+00:00"),
+        ("R32", primeros.get("H","1°H"), segundos.get("J","2°J"),     "2026-07-02T16:00:00+00:00"),
+        ("R32", primeros.get("B","1°B"), t3(6),                       "2026-07-02T20:00:00+00:00"),
+        ("R32", primeros.get("J","1°J"), segundos.get("H","2°H"),     "2026-07-03T22:00:00+00:00"),
+        ("R32", primeros.get("K","1°K"), t3(7),                       "2026-07-03T20:30:00+00:00"),
+        ("R32", segundos.get("D","2°D"), segundos.get("G","2°G"),     "2026-07-03T17:00:00+00:00"),
+    ]
+
+    # Borrar R32 existentes y recrear
+    db.execute("DELETE FROM partidos WHERE grupo='R32'")
+    db.executemany("INSERT INTO partidos (grupo,local,visitante,hora_inicio) VALUES (?,?,?,?)", cruces)
+    db.commit()
+    return jsonify({"ok": True, "partidos": len(cruces)})
+
+
 def auto_sync_horarios():
     """Sincroniza horarios desde la API al arrancar, si hay API key disponible."""
     api_key = os.environ.get("FOOTBALL_API_KEY") or get_config().get("api_key","")
