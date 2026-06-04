@@ -14,7 +14,7 @@
       {% if p.resultado %}
         <div class="btns-resultado">
           <span class="btn-opcion {% if p.resultado=='1' %}sel-1{% endif %} {% if mis_pronosticos.get(p.id)=='1' and p.resultado=='1' %}acierto{% elif mis_pronosticos.get(p.id)=='1' %}fallo{% endif %}"></span>
-          <span class="btn-opcion {% if p.resultado=='E' %}sel-E{% endif %} {% if mis_pronosticos.get(p.id)=='E' and p.resultado=='E' %}acierto{% elif mis_pronosticos.get(p.id)=='E' %}fallo{% endif %}"></span>
+          <span class="btn-opcion {% if p.resultado=='E' %}sel-E{% endif %} {% if mis_pronosticos.get(p.id)=='E' and p.resultado=='E' %}acierto{% elif mis_pronosticos.get(p.id)=='E' %}fallo{% endif %}">E</span>
           <span class="btn-opcion {% if p.resultado=='2' %}sel-2{% endif %} {% if mis_pronosticos.get(p.id)=='2' and p.resultado=='2' %}acierto{% elif mis_pronosticos.get(p.id)=='2' %}fallo{% endif %}"></span>
         </div>
         {% if mis_pronosticos.get(p.id) %}<div style="margin-top:.3rem;font-size:.7rem;text-align:center;color:{% if mis_pronosticos.get(p.id)==p.resultado %}#5cb85c{% else %}#d9534f{% endif %}">{% if mis_pronosticos.get(p.id)==p.resultado %}✓ Acertaste{% else %}✗ Fallaste{% endif %}</div>{% endif %}
@@ -22,7 +22,7 @@
         {% set mi = mis_pronosticos.get(p.id) %}
         <div class="btns-resultado">
           <span class="btn-opcion {% if mi=='1' %}sel-1{% endif %} bloq"></span>
-          <span class="btn-opcion {% if mi=='E' %}sel-E{% endif %} bloq"></span>
+          <span class="btn-opcion {% if mi=='E' %}sel-E{% endif %} bloq">E</span>
           <span class="btn-opcion {% if mi=='2' %}sel-2{% endif %} bloq"></span>
         </div>
         <div style="font-size:.7rem;color:#555;text-align:center;margin-top:.2rem">🔒 Cerrado</div>
@@ -31,7 +31,7 @@
           <input type="radio" name="partido_{{ p.id }}" id="p{{ p.id }}_1" value="1" {% if mis_pronosticos.get(p.id)=='1' %}checked{% endif %}>
           <label for="p{{ p.id }}_1" class="btn-prono btn-1"></label>
           <input type="radio" name="partido_{{ p.id }}" id="p{{ p.id }}_E" value="E" {% if mis_pronosticos.get(p.id)=='E' %}checked{% endif %}>
-          <label for="p{{ p.id }}_E" class="btn-prono btn-E"></label>
+          <label for="p{{ p.id }}_E" class="btn-prono btn-E">E</label>
           <input type="radio" name="partido_{{ p.id }}" id="p{{ p.id }}_2" value="2" {% if mis_pronosticos.get(p.id)=='2' %}checked{% endif %}>
           <label for="p{{ p.id }}_2" class="btn-prono btn-2"></label>
         </div>
