@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>⚙️ Admin</h1>
+
+<!-- Sync automático -->
+<div class="card" style="margin-bottom:1.2rem">
+  <h2 style="margin-top:0">🔄 Sincronización automática (football-data.org)</h2>
+  {% if api_key %}
+    <p style="color:#aaa;font-size:.85rem;margin-bottom:.8rem">API key configurada. Hacé clic para traer los resultados de partidos finalizados.</p>
+    <button id="btn-sync" class="btn btn-primary" onclick="syncResultados()">↻ Sincronizar resultados</button>
+    <span id="sync-status" style="margin-left:.8rem;font-size:.85rem;color:#aaa"></span>
+  {% else %}
+    <p style="color:#aaa;font-size:.85rem;margin-bottom:.8rem">
+      Registrate gratis en <a href="https://www.football-data.org/" target="_blank" style="color:#c8a227">football-data.org</a>
+      y pegá tu API key acá para sincronizar resultados automáticamente.
+    </p>
+    <form method="POST">
+      <input type="hidden" name="accion" value="config">
+      <div style="display:flex;gap:.5rem;max-width:500px">
+        <input type="text" name="api_key" placeholder="Pegá tu API key...">
+        <button type="submit" class="btn btn-primary">Guardar</button>
+      </div>
+    </form>
+  {% endif %}
+</div>
+
+{% if api_key %}
+<!-- Opción de cambiar la key -->
+<details style="margin-bottom:1.2rem">
+  <summary style="color:#555;font-size:.82rem;cursor:pointer">Cambiar API key</summary>
+  <form method="POST" style="margin-top:.6rem">
+    <input type="hidden" name="accion" value="config">
+    <div style="display:flex;gap:.5rem;max-width:500px">
+      <input type="text" name="api_key" value="{{ api_key }}" placeholder="API key">
+      <button type="submit" class="btn btn-sm btn-outline">Guardar</button>
+    </div>
+  </form>
+</details>
+{% endif %}
+
+<!-- Resultados manuales -->
+<div class="card">
+  <h2 style="margin-top:0">✏️ Cargar resultados manualmente</h2>
+  <p style="color:#666;font-size:.8rem;margin-bottom:.8rem">Solo para correcciones. <strong style="color:#c8a227">1</strong> = local, <strong style="color:#c8a227">X</strong> = empate, <strong style="color:#c8a227">2</strong> = visitante.</p>
+
+  {% for grupo, partidos in partidos_por_grupo.items() %}
+  <h2>Grupo {{ grupo }}</h2>
+  {% for p in partidos %}
+  <div class="partido-row">
+    <div class="eq-local">
+      <strong>{{ p.local }}</strong>
+      <span class="partido-hora" style="display:block;text-align:right">{{ p.hora_inicio | hora_local }}</span>
+    </div>
+    <div style="text-align:center">
+      <form method="POST" style="display:flex;gap:.35rem;align-items:center">
+        <input type="hidden" name="accion" value="resultado">
+        <input type="hidden" name="partido_id" value="{{ p.id }}">
+        <select name="resultado">
+          <option value="">— pdte —</option>
+          <option value="1" {% if p.resultado=='1' %}selected{% endif %}>1 local</option>
+          <option value="X" {% if p.resultado=='X' %}selected{% endif %}>X empate</option>
+          <option value="2" {% if p.resultado=='2' %}selected{% endif %}>2 visit.</option>
+        </select>
+        <button type="submit" class="btn btn-sm btn-primary">✓</button>
+      </form>
+    </div>
+    <div class="eq-visit"><strong>{{ p.visitante }}</strong></div>
+  </div>
+  {% endfor %}
+  {% endfor %}
+</div>
+
+<script>
+async function syncResultados() {
+  const btn = document.getElementById('btn-sync');
+  const st = document.getElementById('sync-status');
+  btn.disabled = true;
+  st.textContent = 'Consultando API...';
+  try {
+    const r = await fetch('/api/sync-resultados', {method:'POST'});
+    const d = await r.json();
+    if (d.ok) {
+      st.textContent = `✓ ${d.actualizados} partido(s) actualizado(s)`;
+      st.style.color = '#5cb85c';
+      if (d.actualizados > 0) setTimeout(() => location.reload(), 1200);
+    } else {
+      st.textContent = '✗ ' + (d.error || 'Error');
+      st.style.color = '#d9534f';
+    }
+  } catch(e) {
+    st.textContent = '✗ Error de red';
+    st.style.color = '#d9534f';
+  }
+  btn.disabled = false;
+}
+</script>
+{% endblock %}

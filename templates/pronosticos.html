@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>⚽ Mis pronósticos</h1>
+<p style="color:#666;font-size:.82rem;margin-bottom:1.4rem">
+  <strong style="color:#c8a227">1</strong> = gana local &nbsp;·&nbsp;
+  <strong style="color:#c8a227">X</strong> = empate &nbsp;·&nbsp;
+  <strong style="color:#c8a227">2</strong> = gana visitante.<br>
+  Los pronósticos se bloquean automáticamente al inicio del partido.
+</p>
+
+<form method="POST">
+{% for grupo, partidos in partidos_por_grupo.items() %}
+<div class="card" style="margin-bottom:1rem">
+  <h2 style="margin-top:0">Grupo {{ grupo }}</h2>
+  {% for p in partidos %}
+  {% set bloqueado = partido_bloqueado(p.hora_inicio) %}
+  <div class="partido-row">
+    <div class="eq-local"><strong>{{ p.local }}</strong></div>
+
+    <div class="partido-meta">
+      {% if p.resultado %}
+        <div>
+          {% if p.resultado == '1' %}<span class="res-badge res-1">1</span>
+          {% elif p.resultado == 'X' %}<span class="res-badge res-X">X</span>
+          {% else %}<span class="res-badge res-2">2</span>{% endif %}
+        </div>
+        {% if mis_pronosticos.get(p.id) %}
+          <div style="margin-top:.3rem;font-size:.72rem;color:{% if mis_pronosticos.get(p.id)==p.resultado %}#5cb85c{% else %}#d9534f{% endif %}">
+            {% if mis_pronosticos.get(p.id)==p.resultado %}✓ Acertaste{% else %}✗ Fallaste{% endif %}
+          </div>
+        {% endif %}
+      {% elif bloqueado %}
+        <div class="bloqueado">🔒 Cerrado</div>
+        {% if mis_pronosticos.get(p.id) %}
+          <div style="margin-top:.2rem">
+            <span class="mi-prono">mi prono: {{ mis_pronosticos.get(p.id) }}</span>
+          </div>
+        {% endif %}
+      {% else %}
+        <div class="radio-group">
+          <input type="radio" name="partido_{{ p.id }}" id="p{{ p.id }}_1" value="1"
+            {% if mis_pronosticos.get(p.id)=='1' %}checked{% endif %}>
+          <label for="p{{ p.id }}_1">1</label>
+          <input type="radio" name="partido_{{ p.id }}" id="p{{ p.id }}_X" value="X"
+            {% if mis_pronosticos.get(p.id)=='X' %}checked{% endif %}>
+          <label for="p{{ p.id }}_X">X</label>
+          <input type="radio" name="partido_{{ p.id }}" id="p{{ p.id }}_2" value="2"
+            {% if mis_pronosticos.get(p.id)=='2' %}checked{% endif %}>
+          <label for="p{{ p.id }}_2">2</label>
+        </div>
+      {% endif %}
+      <span class="partido-hora">{{ p.hora_inicio | hora_local }}</span>
+    </div>
+
+    <div class="eq-visit"><strong>{{ p.visitante }}</strong></div>
+  </div>
+  {% endfor %}
+</div>
+{% endfor %}
+
+<div style="text-align:center;margin-top:1.4rem">
+  <button type="submit" class="btn btn-primary" style="padding:.65rem 2.2rem;font-size:.95rem">
+    💾 Guardar pronósticos
+  </button>
+</div>
+</form>
+{% endblock %}

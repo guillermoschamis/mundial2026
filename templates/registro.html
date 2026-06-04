@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="max-width:380px; margin: 3rem auto;">
+  <div style="text-align:center; margin-bottom:2rem;">
+    <div style="font-size:3rem;">⚽</div>
+    <h1>Crear cuenta</h1>
+  </div>
+  <div class="card">
+    <form method="POST">
+      <div class="form-group">
+        <label>Elegí tu nombre de usuario</label>
+        <input type="text" name="nombre" required autofocus placeholder="Ej: Rodrigo">
+      </div>
+      <div class="form-group">
+        <label>Contraseña</label>
+        <input type="password" name="password" required placeholder="Mínimo 4 caracteres">
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%; margin-top:.5rem;">Crear cuenta</button>
+    </form>
+    <p style="text-align:center; margin-top:1.2rem; font-size:.88rem; color:#666;">
+      ¿Ya tenés cuenta? <a href="/login" style="color:#c8a227;">Iniciá sesión</a>
+    </p>
+  </div>
+</div>
+{% endblock %}
