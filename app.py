@@ -429,14 +429,16 @@ self.addEventListener('fetch', e => {
 
 # ─── MAIN ─────────────────────────────────────────────────────────────────────
 
+# Inicializar DB al arrancar (funciona con gunicorn y con python app.py)
+try:
+    conn = sqlite3.connect(DATABASE)
+    conn.execute("SELECT 1")
+    conn.close()
+except Exception:
+    if os.path.exists(DATABASE): os.remove(DATABASE)
+init_db()
+
 if __name__ == "__main__":
-    try:
-        conn = sqlite3.connect(DATABASE)
-        conn.execute("SELECT 1")
-        conn.close()
-    except Exception:
-        if os.path.exists(DATABASE): os.remove(DATABASE)
-    init_db()
     print("\n🏆 App del Mundial 2026 lista!")
     print("   Local:   http://localhost:5000")
     print("   Red:     http://[tu-IP]:5000  (para que entren tus amigos)")
