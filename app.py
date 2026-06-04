@@ -294,12 +294,92 @@ def service_worker():
     from flask import Response
     return Response("const CACHE='prode-v1';const URLS=['/','/pronosticos','/tabla'];self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(URLS))));self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;e.respondWith(fetch(e.request).catch(()=>caches.match(e.request)));});", mimetype="application/javascript")
 
+
+@app.route("/api/sync-horarios", methods=["POST"])
+def sync_horarios():
+    if not session.get("es_admin"): return jsonify({"error":"No autorizado"}), 403
+    api_key = get_config().get("api_key","").strip()
+    if not api_key: return jsonify({"error":"API key no configurada"}), 400
+    try:
+        import urllib.request
+        req = urllib.request.Request("https://api.football-data.org/v4/competitions/WC/matches?season=2026&stage=GROUP_STAGE", headers={"X-Auth-Token": api_key})
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            data = json.loads(resp.read().decode())
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    db = get_db(); actualizados = 0
+    for m in data.get("matches",[]):
+        utc_date = m.get("utcDate")
+        if not utc_date: continue
+        api_id = m.get("id")
+        hn = m.get("homeTeam",{}).get("shortName","")
+        an = m.get("awayTeam",{}).get("shortName","")
+        p = db.execute("SELECT id FROM partidos WHERE api_id=?", (api_id,)).fetchone()
+        if not p:
+            p = db.execute("SELECT id FROM partidos WHERE local LIKE ? AND visitante LIKE ?", (f"%{hn[:4]}%", f"%{an[:4]}%")).fetchone()
+        if p:
+            db.execute("UPDATE partidos SET hora_inicio=?, api_id=? WHERE id=?", (utc_date, api_id, p["id"]))
+            actualizados += 1
+    db.commit()
+    return jsonify({"ok":True,"actualizados":actualizados})
+
+
+def auto_sync_horarios():
+    """Sincroniza horarios desde la API al arrancar, si hay API key disponible."""
+    api_key = os.environ.get("FOOTBALL_API_KEY") or get_config().get("api_key","")
+    if not api_key:
+        return
+    try:
+        import urllib.request
+        req = urllib.request.Request(
+            "https://api.football-data.org/v4/competitions/WC/matches?season=2026&stage=GROUP_STAGE",
+            headers={"X-Auth-Token": api_key.strip()}
+        )
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            data = json.loads(resp.read().decode())
+        db = sqlite3.connect(DATABASE)
+        db.row_factory = sqlite3.Row
+        actualizados = 0
+        for m in data.get("matches", []):
+            utc_date = m.get("utcDate")
+            if not utc_date:
+                continue
+            api_id = m.get("id")
+            hn = m.get("homeTeam", {}).get("shortName", "")
+            an = m.get("awayTeam", {}).get("shortName", "")
+            p = db.execute("SELECT id FROM partidos WHERE api_id=?", (api_id,)).fetchone()
+            if not p:
+                p = db.execute(
+                    "SELECT id FROM partidos WHERE local LIKE ? AND visitante LIKE ?",
+                    (f"%{hn[:4]}%", f"%{an[:4]}%")
+                ).fetchone()
+            if p:
+                db.execute("UPDATE partidos SET hora_inicio=?, api_id=? WHERE id=?",
+                           (utc_date, api_id, p["id"]))
+                actualizados += 1
+            # también actualizar resultado si está disponible
+            status = m.get("status","")
+            if status == "FINISHED":
+                home = m.get("score",{}).get("fullTime",{}).get("home")
+                away = m.get("score",{}).get("fullTime",{}).get("away")
+                if home is not None and away is not None and p:
+                    resultado = "1" if home > away else ("2" if away > home else "E")
+                    db.execute("UPDATE partidos SET resultado=? WHERE id=?", (resultado, p["id"]))
+        db.commit()
+        db.close()
+        print(f"Auto-sync: {actualizados} partidos actualizados desde la API.")
+    except Exception as e:
+        print(f"Auto-sync: no se pudo conectar con la API ({e})")
+
 try:
     conn = sqlite3.connect(DATABASE); conn.execute("SELECT 1"); conn.close()
 except:
     if os.path.exists(DATABASE): os.remove(DATABASE)
 init_db()
+auto_sync_horarios()
 
 if __name__ == "__main__":
     print("\n🏆 App del Mundial 2026 lista!\n   http://localhost:5000\n   Admin: usuario='admin' / contraseña='admin123'\n")
     app.run(debug=True, host="0.0.0.0", port=5000)
+
+# ─── SYNC HORARIOS ────────────────────────────────────────────────────────────

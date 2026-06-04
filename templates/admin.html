@@ -5,8 +5,11 @@
   <h2 style="margin-top:0">🔄 Sincronización automática (football-data.org)</h2>
   {% if api_key %}
     <p style="color:#aaa;font-size:.85rem;margin-bottom:.8rem">API key configurada.</p>
-    <button id="btn-sync" class="btn btn-primary" onclick="syncResultados()">↻ Sincronizar resultados</button>
-    <span id="sync-status" style="margin-left:.8rem;font-size:.85rem;color:#aaa"></span>
+    <div style="display:flex;gap:.7rem;flex-wrap:wrap;align-items:center">
+      <button id="btn-sync-h" class="btn btn-outline" onclick="syncHorarios()">🕐 Sincronizar horarios</button>
+      <button id="btn-sync" class="btn btn-primary" onclick="syncResultados()">↻ Sincronizar resultados</button>
+    </div>
+    <span id="sync-status" style="display:block;margin-top:.5rem;font-size:.85rem;color:#aaa"></span>
   {% else %}
     <p style="color:#aaa;font-size:.85rem;margin-bottom:.8rem">Registrate gratis en <a href="https://www.football-data.org/" target="_blank" style="color:#c8a227">football-data.org</a> y pegá tu API key.</p>
     <form method="POST"><input type="hidden" name="accion" value="config"><div style="display:flex;gap:.5rem;max-width:500px"><input type="text" name="api_key" placeholder="Pegá tu API key..."><button type="submit" class="btn btn-primary">Guardar</button></div></form>
@@ -28,6 +31,7 @@
   {% endfor %}
 </div>
 <script>
-async function syncResultados(){const btn=document.getElementById('btn-sync');const st=document.getElementById('sync-status');btn.disabled=true;st.textContent='Consultando API...';try{const r=await fetch('/api/sync-resultados',{method:'POST'});const d=await r.json();if(d.ok){st.textContent=`✓ ${d.actualizados} partido(s) actualizado(s)`;st.style.color='#5cb85c';if(d.actualizados>0)setTimeout(()=>location.reload(),1200);}else{st.textContent='✗ '+(d.error||'Error');st.style.color='#d9534f';}}catch(e){st.textContent='✗ Error de red';st.style.color='#d9534f';}btn.disabled=false;}
+async function syncResultados(){const btn=document.getElementById('btn-sync');const st=document.getElementById('sync-status');btn.disabled=true;st.textContent='Consultando API...';try{const r=await fetch('/api/sync-resultados',{method:'POST'});const d=await r.json();if(d.ok){st.textContent=`✓ ${d.actualizados} resultado(s) actualizado(s)`;st.style.color='#5cb85c';if(d.actualizados>0)setTimeout(()=>location.reload(),1200);}else{st.textContent='✗ '+(d.error||'Error');st.style.color='#d9534f';}}catch(e){st.textContent='✗ Error de red';st.style.color='#d9534f';}btn.disabled=false;}
+async function syncHorarios(){const btn=document.getElementById('btn-sync-h');const st=document.getElementById('sync-status');btn.disabled=true;st.textContent='Sincronizando horarios...';st.style.color='#aaa';try{const r=await fetch('/api/sync-horarios',{method:'POST'});const d=await r.json();if(d.ok){st.textContent=`✓ ${d.actualizados} horario(s) actualizado(s)`;st.style.color='#5cb85c';if(d.actualizados>0)setTimeout(()=>location.reload(),1200);}else{st.textContent='✗ '+(d.error||'Error');st.style.color='#d9534f';}}catch(e){st.textContent='✗ Error de red';st.style.color='#d9534f';}btn.disabled=false;}
 </script>
 {% endblock %}
