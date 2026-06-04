@@ -357,7 +357,12 @@ def admin():
     partidos_por_grupo = {}
     for g in fases:
         partidos_por_grupo[g] = query(f"SELECT * FROM partidos WHERE grupo={PH} ORDER BY hora_inicio,id", (g,), fetchall=True)
-    return render_template("admin.html", partidos_por_grupo=partidos_por_grupo, api_key=get_config().get("api_key",""))
+    usuarios_raw = query(f"SELECT id,nombre FROM usuarios WHERE nombre!={PH} ORDER BY nombre", ("admin",), fetchall=True)
+    usuarios = []
+    for u in usuarios_raw:
+        cnt = query(f"SELECT COUNT(*) as c FROM pronosticos WHERE usuario_id={PH}", (u["id"],), fetchone=True)
+        usuarios.append({"id":u["id"],"nombre":u["nombre"],"total_pronos": cnt["c"] if USE_PG else cnt[0]})
+    return render_template("admin.html", partidos_por_grupo=partidos_por_grupo, api_key=get_config().get("api_key",""), usuarios=usuarios)
 
 # ─── API: SYNC RESULTADOS ─────────────────────────────────────────────────────
 
@@ -480,6 +485,17 @@ def generar_16avos():
     return jsonify({"ok":True,"partidos":len(cruces)})
 
 # ─── PWA ──────────────────────────────────────────────────────────────────────
+
+@app.route("/admin/eliminar-usuario", methods=["POST"])
+def eliminar_usuario():
+    if not session.get("es_admin"): return redirect(url_for("index"))
+    uid = request.form.get("usuario_id")
+    if uid:
+        query(f"DELETE FROM pronosticos WHERE usuario_id={PH}", (uid,), commit=True)
+        query(f"DELETE FROM usuarios WHERE id={PH} AND es_admin=0", (uid,), commit=True)
+        flash("Usuario eliminado.")
+    return redirect(url_for("admin"))
+
 
 @app.route("/grupos")
 def grupos_view():
