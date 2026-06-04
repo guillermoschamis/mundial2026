@@ -33,11 +33,47 @@
     input:focus{outline:none;border-color:#c8a227}
     label{display:block;margin-bottom:.28rem;font-size:.83rem;color:#aaa}
     .form-group{margin-bottom:.9rem}
-    .radio-group{display:flex;gap:.4rem;flex-wrap:wrap}
-    .radio-group label{cursor:pointer;padding:.38rem .82rem;border-radius:6px;border:1px solid #1e3a5a;color:#aaa;font-size:.86rem;transition:all .15s;display:block;margin:0}
-    .radio-group input[type=radio]{display:none}
-    .radio-group input:checked + label{border-color:#c8a227;color:#c8a227;background:#1a2e44;font-weight:700}
-    .radio-group label:hover{border-color:#c8a227;color:#ddd}
+    select{background:#071220;color:#eee;border:1px solid #1e3a5a;padding:.3rem .5rem;border-radius:6px;font-size:.88rem}
+
+    /* ── Botones de pronóstico ── */
+    .btns-prono, .btns-resultado{display:flex;gap:.35rem;justify-content:center}
+    .btns-prono input[type=radio]{display:none}
+
+    .btn-prono{
+      display:inline-flex;align-items:center;justify-content:center;
+      width:2.4rem;height:2.4rem;border-radius:8px;
+      border:2px solid #1e3a5a;color:#555;font-weight:700;font-size:.95rem;
+      cursor:pointer;transition:all .15s;user-select:none;
+    }
+    /* colores por opción */
+    .btn-1{border-color:#1e3a5c}
+    .btn-E{border-color:#3a3a1a}
+    .btn-2{border-color:#3a1a1a}
+
+    /* seleccionado */
+    .btns-prono input[type=radio]:checked + .btn-1{background:#1a4a8a;border-color:#4a8adc;color:#fff}
+    .btns-prono input[type=radio]:checked + .btn-E{background:#4a4a00;border-color:#c8c827;color:#fff}
+    .btns-prono input[type=radio]:checked + .btn-2{background:#6a1a1a;border-color:#dc4a4a;color:#fff}
+
+    /* hover */
+    .btn-prono.btn-1:hover{background:#0f2a4a;border-color:#3a7acc;color:#aad}
+    .btn-prono.btn-E:hover{background:#2a2a00;border-color:#aaaa00;color:#dda}
+    .btn-prono.btn-2:hover{background:#3a0a0a;border-color:#aa3a3a;color:#daa}
+
+    /* resultados (solo display) */
+    .btn-opcion{
+      display:inline-flex;align-items:center;justify-content:center;
+      width:2.2rem;height:2.2rem;border-radius:8px;
+      border:2px solid #1e3a5a;color:#444;font-weight:700;font-size:.88rem;
+    }
+    .sel-1{background:#1a4a8a;border-color:#4a8adc;color:#fff}
+    .sel-E{background:#4a4a00;border-color:#c8c827;color:#fff}
+    .sel-2{background:#6a1a1a;border-color:#dc4a4a;color:#fff}
+    .acierto{box-shadow:0 0 0 2px #5cb85c}
+    .fallo{opacity:.5}
+    .bloq{opacity:.6}
+
+    /* tabla */
     table{width:100%;border-collapse:collapse}
     th{text-align:left;padding:.55rem .75rem;color:#777;font-size:.78rem;border-bottom:1px solid #1e3a5a;text-transform:uppercase;letter-spacing:.5px}
     td{padding:.6rem .75rem;border-bottom:1px solid #111d2a;font-size:.88rem}
@@ -45,25 +81,25 @@
     tr:hover td{background:#0d1f30}
     .rank{color:#c8a227;font-weight:700}
     .pts{color:#c8a227;font-weight:700;font-size:.98rem}
-    .partido-row{display:grid;grid-template-columns:1fr auto 1fr;gap:.5rem;align-items:center;padding:.65rem 0;border-bottom:1px solid #0f1d2a}
+
+    /* partido row */
+    .partido-row{display:grid;grid-template-columns:1fr auto 1fr;gap:.5rem;align-items:center;padding:.7rem 0;border-bottom:1px solid #0f1d2a}
     .partido-row:last-child{border-bottom:none}
-    .eq-local{text-align:right;font-size:.9rem}
-    .eq-visit{font-size:.9rem}
+    .eq-local{text-align:right;font-size:.9rem;display:flex;align-items:center;justify-content:flex-end;gap:.35rem}
+    .eq-visit{font-size:.9rem;display:flex;align-items:center;gap:.35rem}
+    .bandera{font-size:1.2rem;line-height:1}
     .partido-meta{text-align:center}
-    .partido-hora{font-size:.72rem;color:#555;margin-top:.15rem;display:block}
-    .res-badge{display:inline-block;padding:.18rem .5rem;border-radius:5px;font-size:.76rem;font-weight:700}
-    .res-1{background:#1a3a5c;color:#7db8e8}
-    .res-X{background:#2a2a1a;color:#c8c87d}
-    .res-2{background:#3a1a1a;color:#e87d7d}
-    .bloqueado{font-size:.75rem;color:#444;font-style:italic;text-align:center}
-    .mi-prono{display:inline-block;padding:.18rem .5rem;border-radius:5px;font-size:.76rem;border:1px solid #333;color:#666}
-    select{background:#071220;color:#eee;border:1px solid #1e3a5a;padding:.3rem .5rem;border-radius:6px;font-size:.88rem}
-    @media(max-width:580px){nav{flex-wrap:wrap;height:auto;padding:.5rem .8rem;gap:.3rem}.nav-user{display:none}}
+    .partido-hora{font-size:.68rem;color:#444;margin-top:.2rem;display:block}
+
+    @media(max-width:580px){
+      nav{flex-wrap:wrap;height:auto;padding:.5rem .8rem;gap:.3rem}
+      .nav-user{display:none}
+      .btn-prono,.btn-opcion{width:2rem;height:2rem;font-size:.82rem}
+    }
   </style>
   <script>
-    if ('serviceWorker' in navigator) {
+    if ('serviceWorker' in navigator)
       window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js'));
-    }
   </script>
 </head>
 <body>

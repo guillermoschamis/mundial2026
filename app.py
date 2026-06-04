@@ -174,6 +174,23 @@ def partido_bloqueado(hora_inicio_str):
 
 app.jinja_env.globals["partido_bloqueado"] = partido_bloqueado
 
+BANDERAS = {
+    "México": "🇲🇽", "Ecuador": "🇪🇨", "Canadá": "🇨🇦", "Marruecos": "🇲🇦",
+    "Uruguay": "🇺🇾", "Kenia": "🇰🇪", "Portugal": "🇵🇹", "Zimbabwe": "🇿🇼",
+    "Alemania": "🇩🇪", "Japón": "🇯🇵", "Arabia Saudita": "🇸🇦", "N. Zelanda": "🇳🇿",
+    "España": "🇪🇸", "Serbia": "🇷🇸", "Brasil": "🇧🇷", "Suiza": "🇨🇭",
+    "Francia": "🇫🇷", "Colombia": "🇨🇴", "Argentina": "🇦🇷", "Croacia": "🇭🇷",
+    "Inglaterra": "🏴󠁧󠁢󠁥󠁮󠁧󠁿", "Senegal": "🇸🇳", "Países Bajos": "🇳🇱", "Irán": "🇮🇷",
+    "Eslovaquia": "🇸🇰", "Qatar": "🇶🇦", "Polonia": "🇵🇱", "Chile": "🇨🇱",
+    "Australia": "🇦🇺", "Italia": "🇮🇹", "Argelia": "🇩🇿", "China": "🇨🇳",
+    "Trinidad y Tobago": "🇹🇹", "EE.UU.": "🇺🇸", "Panamá": "🇵🇦",
+    "Bahréin": "🇧🇭", "Guatemala": "🇬🇹", "Bélgica": "🇧🇪",
+    "Costa de Marfil": "🇨🇮", "Turquía": "🇹🇷", "Indonesia": "🇮🇩",
+    "Dinamarca": "🇩🇰", "Bosnia": "🇧🇦", "Filipinas": "🇵🇭", "Guinea": "🇬🇳",
+}
+app.jinja_env.globals["BANDERAS"] = BANDERAS
+
+
 @app.template_filter('enumerate')
 def enumerate_filter(iterable):
     return enumerate(iterable)
@@ -250,7 +267,7 @@ def pronosticos_view():
             if key.startswith("partido_"):
                 partido_id = int(key.split("_")[1])
                 p = db.execute("SELECT hora_inicio FROM partidos WHERE id=?", (partido_id,)).fetchone()
-                if p and not partido_bloqueado(p["hora_inicio"]) and val in ("1","X","2"):
+                if p and not partido_bloqueado(p["hora_inicio"]) and val in ("1","E","2"):
                     db.execute(
                         "INSERT INTO pronosticos (usuario_id,partido_id,pronostico) VALUES (?,?,?) "
                         "ON CONFLICT(usuario_id,partido_id) DO UPDATE SET pronostico=excluded.pronostico",
@@ -368,7 +385,7 @@ def sync_resultados():
         if home is None or away is None:
             continue
 
-        resultado = "1" if home > away else ("2" if away > home else "X")
+        resultado = "1" if home > away else ("2" if away > home else "E")
 
         # Buscar partido por equipos
         home_name = m.get("homeTeam",{}).get("shortName","")
@@ -443,4 +460,4 @@ if __name__ == "__main__":
     print("   Local:   http://localhost:5000")
     print("   Red:     http://[tu-IP]:5000  (para que entren tus amigos)")
     print("   Admin:   usuario='admin' / contraseña='admin123'\n")
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    a
