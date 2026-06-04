@@ -34,7 +34,7 @@
         <span class="btn-opcion {% if mi=='E' %}sel-E{% endif %} bloq">E</span>
         <span class="btn-opcion {% if mi=='2' %}sel-2{% endif %} bloq"></span>
       </div>
-      <div style="font-size:.7rem;color:#555;text-align:center;margin-top:.2rem">🔒 Cerrado</div>
+      <div style="font-size:.7rem;color:#555;text-align:center;margin-top:.2rem">🔒 <span class="ver-link" onclick="verPronos({{ p.id }}, '{{ p.local }} vs {{ p.visitante }}')" style="cursor:pointer;color:#c8a227;text-decoration:underline">Ver pronósticos</span></div>
     {% else %}
       <div class="btns-prono">
         <input type="radio" name="partido_{{ p.id }}" id="p{{ p.id }}_1" value="1" {% if mis_pronosticos.get(p.id)=='1' %}checked{% endif %}>
@@ -77,4 +77,45 @@
   <button type="submit" class="btn btn-primary" style="padding:.65rem 2.2rem;font-size:.95rem">💾 Guardar pronósticos</button>
 </div>
 </form>
+
+<div id="modal-pronos" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;align-items:center;justify-content:center">
+  <div style="background:#0d2137;border:1px solid #1e3a5a;border-radius:12px;padding:1.5rem;min-width:280px;max-width:90%;max-height:80vh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+      <strong id="modal-titulo" style="color:#c8a227"></strong>
+      <button onclick="document.getElementById('modal-pronos').style.display='none'" style="background:none;border:none;color:#aaa;font-size:1.3rem;cursor:pointer">✕</button>
+    </div>
+    <div id="modal-contenido"></div>
+  </div>
+</div>
+
+<script>
+async function verPronos(id, titulo) {
+  const modal = document.getElementById('modal-pronos');
+  document.getElementById('modal-titulo').textContent = titulo;
+  document.getElementById('modal-contenido').innerHTML = '<p style="color:#666;font-size:.85rem">Cargando...</p>';
+  modal.style.display = 'flex';
+  try {
+    const r = await fetch(`/partido/${id}/pronosticos`);
+    const data = await r.json();
+    if (data.error) {
+      document.getElementById('modal-contenido').innerHTML = `<p style="color:#d9534f">${data.error}</p>`;
+      return;
+    }
+    const labels = {'1':'Local','E':'Empate','2':'Visitante'};
+    const colors = {'1':'#1a4a8a','E':'#4a4a00','2':'#6a1a1a'};
+    const html = data.length === 0
+      ? '<p style="color:#666;font-size:.85rem">Nadie pronosticó este partido.</p>'
+      : data.map(p => `<div style="display:flex;justify-content:space-between;align-items:center;padding:.4rem 0;border-bottom:1px solid #111d2a">
+          <span style="font-size:.88rem">${p.nombre}</span>
+          <span style="background:${colors[p.pronostico]};padding:.2rem .6rem;border-radius:5px;font-size:.8rem;font-weight:700">${p.pronostico === 'E' ? 'E' : ''}</span>
+        </div>`).join('');
+    document.getElementById('modal-contenido').innerHTML = html;
+  } catch(e) {
+    document.getElementById('modal-contenido').innerHTML = '<p style="color:#d9534f">Error al cargar.</p>';
+  }
+}
+document.getElementById('modal-pronos').addEventListener('click', function(e) {
+  if (e.target === this) this.style.display = 'none';
+});
+</script>
 {% endblock %}
