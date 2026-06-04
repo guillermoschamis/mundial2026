@@ -1,48 +1,78 @@
 {% extends "base.html" %}
 {% block content %}
 <h1>⚽ Mis pronósticos</h1>
-<p style="color:#666;font-size:.82rem;margin-bottom:1.4rem">Los pronósticos se bloquean automáticamente al inicio del partido.</p>
+
+<!-- Selector de modo -->
+<div style="display:flex;gap:.5rem;margin-bottom:1.2rem">
+  <a href="/pronosticos?modo=grupo" class="btn {% if modo=='grupo' %}btn-primary{% else %}btn-outline{% endif %}">Por grupo</a>
+  <a href="/pronosticos?modo=crono" class="btn {% if modo=='crono' %}btn-primary{% else %}btn-outline{% endif %}">Cronológico</a>
+</div>
+<p style="color:#666;font-size:.82rem;margin-bottom:1.2rem">Los pronósticos se bloquean automáticamente al inicio del partido.</p>
+
 <form method="POST">
-{% for grupo, partidos in partidos_por_grupo.items() %}
-<div class="card" style="margin-bottom:1rem">
-  <h2 style="margin-top:0">Grupo {{ grupo }}</h2>
-  {% for p in partidos %}
-  {% set bloqueado = partido_bloqueado(p.hora_inicio) %}
-  <div class="partido-row">
-    <div class="eq-local"><span class="bandera">{{ BANDERAS.get(p.local,"") }}</span><strong>{{ p.local }}</strong></div>
-    <div class="partido-meta">
-      {% if p.resultado %}
-        <div class="btns-resultado">
-          <span class="btn-opcion {% if p.resultado=='1' %}sel-1{% endif %} {% if mis_pronosticos.get(p.id)=='1' and p.resultado=='1' %}acierto{% elif mis_pronosticos.get(p.id)=='1' %}fallo{% endif %}"></span>
-          <span class="btn-opcion {% if p.resultado=='E' %}sel-E{% endif %} {% if mis_pronosticos.get(p.id)=='E' and p.resultado=='E' %}acierto{% elif mis_pronosticos.get(p.id)=='E' %}fallo{% endif %}">E</span>
-          <span class="btn-opcion {% if p.resultado=='2' %}sel-2{% endif %} {% if mis_pronosticos.get(p.id)=='2' and p.resultado=='2' %}acierto{% elif mis_pronosticos.get(p.id)=='2' %}fallo{% endif %}"></span>
-        </div>
-        {% if mis_pronosticos.get(p.id) %}<div style="margin-top:.3rem;font-size:.7rem;text-align:center;color:{% if mis_pronosticos.get(p.id)==p.resultado %}#5cb85c{% else %}#d9534f{% endif %}">{% if mis_pronosticos.get(p.id)==p.resultado %}✓ Acertaste{% else %}✗ Fallaste{% endif %}</div>{% endif %}
-      {% elif bloqueado %}
-        {% set mi = mis_pronosticos.get(p.id) %}
-        <div class="btns-resultado">
-          <span class="btn-opcion {% if mi=='1' %}sel-1{% endif %} bloq"></span>
-          <span class="btn-opcion {% if mi=='E' %}sel-E{% endif %} bloq">E</span>
-          <span class="btn-opcion {% if mi=='2' %}sel-2{% endif %} bloq"></span>
-        </div>
-        <div style="font-size:.7rem;color:#555;text-align:center;margin-top:.2rem">🔒 Cerrado</div>
-      {% else %}
-        <div class="btns-prono">
-          <input type="radio" name="partido_{{ p.id }}" id="p{{ p.id }}_1" value="1" {% if mis_pronosticos.get(p.id)=='1' %}checked{% endif %}>
-          <label for="p{{ p.id }}_1" class="btn-prono btn-1"></label>
-          <input type="radio" name="partido_{{ p.id }}" id="p{{ p.id }}_E" value="E" {% if mis_pronosticos.get(p.id)=='E' %}checked{% endif %}>
-          <label for="p{{ p.id }}_E" class="btn-prono btn-E">E</label>
-          <input type="radio" name="partido_{{ p.id }}" id="p{{ p.id }}_2" value="2" {% if mis_pronosticos.get(p.id)=='2' %}checked{% endif %}>
-          <label for="p{{ p.id }}_2" class="btn-prono btn-2"></label>
-        </div>
+
+{% macro partido_row(p) %}
+{% set bloqueado = partido_bloqueado(p.hora_inicio) %}
+<div class="partido-row">
+  <div class="eq-local"><span class="bandera">{{ BANDERAS.get(p.local,"") }}</span><strong>{{ p.local }}</strong></div>
+  <div class="partido-meta">
+    {% if p.resultado %}
+      <div class="btns-resultado">
+        <span class="btn-opcion {% if p.resultado=='1' %}sel-1{% endif %} {% if mis_pronosticos.get(p.id)=='1' and p.resultado=='1' %}acierto{% elif mis_pronosticos.get(p.id)=='1' %}fallo{% endif %}"></span>
+        <span class="btn-opcion {% if p.resultado=='E' %}sel-E{% endif %} {% if mis_pronosticos.get(p.id)=='E' and p.resultado=='E' %}acierto{% elif mis_pronosticos.get(p.id)=='E' %}fallo{% endif %}">E</span>
+        <span class="btn-opcion {% if p.resultado=='2' %}sel-2{% endif %} {% if mis_pronosticos.get(p.id)=='2' and p.resultado=='2' %}acierto{% elif mis_pronosticos.get(p.id)=='2' %}fallo{% endif %}"></span>
+      </div>
+      {% if mis_pronosticos.get(p.id) %}
+      <div style="margin-top:.3rem;font-size:.7rem;text-align:center;color:{% if mis_pronosticos.get(p.id)==p.resultado %}#5cb85c{% else %}#d9534f{% endif %}">
+        {% if mis_pronosticos.get(p.id)==p.resultado %}✓ Acertaste{% else %}✗ Fallaste{% endif %}
+      </div>
       {% endif %}
-      <span class="partido-hora">{{ p.hora_inicio | hora_local }}</span>
-    </div>
-    <div class="eq-visit"><strong>{{ p.visitante }}</strong><span class="bandera">{{ BANDERAS.get(p.visitante,"") }}</span></div>
+    {% elif bloqueado %}
+      {% set mi = mis_pronosticos.get(p.id) %}
+      <div class="btns-resultado">
+        <span class="btn-opcion {% if mi=='1' %}sel-1{% endif %} bloq"></span>
+        <span class="btn-opcion {% if mi=='E' %}sel-E{% endif %} bloq">E</span>
+        <span class="btn-opcion {% if mi=='2' %}sel-2{% endif %} bloq"></span>
+      </div>
+      <div style="font-size:.7rem;color:#555;text-align:center;margin-top:.2rem">🔒 Cerrado</div>
+    {% else %}
+      <div class="btns-prono">
+        <input type="radio" name="partido_{{ p.id }}" id="p{{ p.id }}_1" value="1" {% if mis_pronosticos.get(p.id)=='1' %}checked{% endif %}>
+        <label for="p{{ p.id }}_1" class="btn-prono btn-1"></label>
+        <input type="radio" name="partido_{{ p.id }}" id="p{{ p.id }}_E" value="E" {% if mis_pronosticos.get(p.id)=='E' %}checked{% endif %}>
+        <label for="p{{ p.id }}_E" class="btn-prono btn-E">E</label>
+        <input type="radio" name="partido_{{ p.id }}" id="p{{ p.id }}_2" value="2" {% if mis_pronosticos.get(p.id)=='2' %}checked{% endif %}>
+        <label for="p{{ p.id }}_2" class="btn-prono btn-2"></label>
+      </div>
+    {% endif %}
+    <span class="partido-hora">{{ p.hora_inicio | hora_local }}</span>
+  </div>
+  <div class="eq-visit"><strong>{{ p.visitante }}</strong><span class="bandera">{{ BANDERAS.get(p.visitante,"") }}</span></div>
+</div>
+{% endmacro %}
+
+{% if modo == 'crono' %}
+  {% set current_date = namespace(val="") %}
+  {% for p in partidos_cronologicos %}
+    {% set fecha = (p.hora_inicio | hora_local).split('·')[0].strip() %}
+    {% if fecha != current_date.val %}
+      {% if not loop.first %}</div>{% endif %}
+      {% set current_date.val = fecha %}
+      <div class="card" style="margin-bottom:1rem">
+      <h2 style="margin-top:0">{{ fecha }}</h2>
+    {% endif %}
+    {{ partido_row(p) }}
+    {% if loop.last %}</div>{% endif %}
+  {% endfor %}
+{% else %}
+  {% for grupo, partidos in partidos_por_grupo.items() %}
+  <div class="card" style="margin-bottom:1rem">
+    <h2 style="margin-top:0">Grupo {{ grupo }}</h2>
+    {% for p in partidos %}{{ partido_row(p) }}{% endfor %}
   </div>
   {% endfor %}
-</div>
-{% endfor %}
+{% endif %}
+
 <div style="text-align:center;margin-top:1.4rem">
   <button type="submit" class="btn btn-primary" style="padding:.65rem 2.2rem;font-size:.95rem">💾 Guardar pronósticos</button>
 </div>

@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>🗂️ Grupos</h1>
+<p style="color:#666;font-size:.83rem;margin-bottom:1.4rem">Posiciones actualizadas según resultados cargados.</p>
+
+{% for grupo, tabla in datos.items() %}
+<div class="card" style="margin-bottom:1rem">
+  <h2 style="margin-top:0">Grupo {{ grupo }}</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Equipo</th>
+        <th title="Partidos jugados">PJ</th>
+        <th title="Partidos ganados">G</th>
+        <th title="Partidos empatados">E</th>
+        <th title="Partidos perdidos">P</th>
+        <th title="Puntos">Pts</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for i, (equipo, stats) in tabla|enumerate %}
+      <tr {% if i < 2 %}style="border-left:3px solid #c8a227"{% elif i == 2 %}style="border-left:3px solid #555"{% endif %}>
+        <td style="color:#666">{{ i+1 }}</td>
+        <td>{{ BANDERAS.get(equipo,"") }} {{ equipo }}</td>
+        <td style="color:#666">{{ stats.gj }}</td>
+        <td style="color:#5cb85c">{{ stats.pg }}</td>
+        <td style="color:#c8c827">{{ stats.pe }}</td>
+        <td style="color:#d9534f">{{ stats.pp }}</td>
+        <td class="pts">{{ stats.pts }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <p style="font-size:.72rem;color:#444;margin-top:.5rem">⬛ Clasifican los 2 primeros (borde dorado) + mejores terceros (borde gris)</p>
+</div>
+{% endfor %}
+{% endblock %}
