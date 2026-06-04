@@ -60,99 +60,98 @@ def init_db():
 
     count = db.execute("SELECT COUNT(*) FROM partidos").fetchone()[0]
     if count == 0:
-        # hora_inicio en UTC. Partidos del Mundial 2026 (horarios estimados)
         partidos = [
             # Grupo A
-            ("A","México","Ecuador",         "2026-06-11T21:00:00+00:00"),
-            ("A","Canadá","Marruecos",        "2026-06-12T18:00:00+00:00"),
-            ("A","México","Canadá",           "2026-06-16T21:00:00+00:00"),
-            ("A","Marruecos","Ecuador",       "2026-06-16T18:00:00+00:00"),
-            ("A","Ecuador","Canadá",          "2026-06-20T21:00:00+00:00"),
-            ("A","Marruecos","México",        "2026-06-20T21:00:00+00:00"),
+            ("A","México","Sudáfrica",             "2026-06-11T18:00:00+00:00"),
+            ("A","Corea del Sur","Rep. Checa",     "2026-06-12T01:00:00+00:00"),
+            ("A","Rep. Checa","Sudáfrica",         "2026-06-18T15:00:00+00:00"),
+            ("A","México","Corea del Sur",         "2026-06-19T00:00:00+00:00"),
+            ("A","Rep. Checa","México",            "2026-06-25T00:00:00+00:00"),
+            ("A","Sudáfrica","Corea del Sur",      "2026-06-25T00:00:00+00:00"),
             # Grupo B
-            ("B","Uruguay","Kenia",           "2026-06-12T21:00:00+00:00"),
-            ("B","Portugal","Zimbabwe",       "2026-06-12T18:00:00+00:00"),
-            ("B","Uruguay","Portugal",        "2026-06-17T21:00:00+00:00"),
-            ("B","Zimbabwe","Kenia",          "2026-06-17T18:00:00+00:00"),
-            ("B","Kenia","Portugal",          "2026-06-21T21:00:00+00:00"),
-            ("B","Zimbabwe","Uruguay",        "2026-06-21T21:00:00+00:00"),
+            ("B","Canadá","Bosnia y Herz.",        "2026-06-12T18:00:00+00:00"),
+            ("B","Qatar","Suiza",                  "2026-06-13T18:00:00+00:00"),
+            ("B","Suiza","Bosnia y Herz.",         "2026-06-18T18:00:00+00:00"),
+            ("B","Canadá","Qatar",                 "2026-06-18T23:00:00+00:00"),
+            ("B","Suiza","Canadá",                 "2026-06-24T18:00:00+00:00"),
+            ("B","Bosnia y Herz.","Qatar",         "2026-06-24T18:00:00+00:00"),
             # Grupo C
-            ("C","Alemania","Japón",          "2026-06-13T18:00:00+00:00"),
-            ("C","Arabia Saudita","N. Zelanda","2026-06-13T21:00:00+00:00"),
-            ("C","Alemania","Arabia Saudita", "2026-06-18T18:00:00+00:00"),
-            ("C","N. Zelanda","Japón",        "2026-06-18T21:00:00+00:00"),
-            ("C","Japón","Arabia Saudita",    "2026-06-22T21:00:00+00:00"),
-            ("C","N. Zelanda","Alemania",     "2026-06-22T21:00:00+00:00"),
+            ("C","Brasil","Marruecos",             "2026-06-13T21:00:00+00:00"),
+            ("C","Haití","Escocia",                "2026-06-14T00:00:00+00:00"),
+            ("C","Escocia","Marruecos",            "2026-06-19T21:00:00+00:00"),
+            ("C","Brasil","Haití",                 "2026-06-20T00:00:00+00:00"),
+            ("C","Escocia","Brasil",               "2026-06-24T21:00:00+00:00"),
+            ("C","Marruecos","Haití",              "2026-06-24T21:00:00+00:00"),
             # Grupo D
-            ("D","España","Serbia",           "2026-06-13T21:00:00+00:00"),
-            ("D","Brasil","Suiza",            "2026-06-14T18:00:00+00:00"),
-            ("D","España","Brasil",           "2026-06-18T21:00:00+00:00"),
-            ("D","Suiza","Serbia",            "2026-06-18T18:00:00+00:00"),
-            ("D","Serbia","Brasil",           "2026-06-22T18:00:00+00:00"),
-            ("D","Suiza","España",            "2026-06-22T18:00:00+00:00"),
+            ("D","EE.UU.","Paraguay",              "2026-06-13T00:00:00+00:00"),
+            ("D","Australia","Turquía",            "2026-06-14T03:00:00+00:00"),
+            ("D","EE.UU.","Australia",             "2026-06-19T18:00:00+00:00"),
+            ("D","Turquía","Paraguay",             "2026-06-20T03:00:00+00:00"),
+            ("D","Turquía","EE.UU.",               "2026-06-26T01:00:00+00:00"),
+            ("D","Paraguay","Australia",           "2026-06-26T01:00:00+00:00"),
             # Grupo E
-            ("E","Francia","Colombia",        "2026-06-14T21:00:00+00:00"),
-            ("E","Argentina","Croacia",       "2026-06-14T18:00:00+00:00"),
-            ("E","Francia","Argentina",       "2026-06-19T21:00:00+00:00"),
-            ("E","Croacia","Colombia",        "2026-06-19T18:00:00+00:00"),
-            ("E","Colombia","Argentina",      "2026-06-23T21:00:00+00:00"),
-            ("E","Croacia","Francia",         "2026-06-23T21:00:00+00:00"),
+            ("E","Alemania","Curazao",             "2026-06-14T16:00:00+00:00"),
+            ("E","Costa de Marfil","Ecuador",      "2026-06-14T22:00:00+00:00"),
+            ("E","Alemania","Costa de Marfil",     "2026-06-20T19:00:00+00:00"),
+            ("E","Ecuador","Curazao",              "2026-06-20T23:00:00+00:00"),
+            ("E","Ecuador","Alemania",             "2026-06-25T19:00:00+00:00"),
+            ("E","Curazao","Costa de Marfil",      "2026-06-25T19:00:00+00:00"),
             # Grupo F
-            ("F","Inglaterra","Senegal",      "2026-06-14T21:00:00+00:00"),
-            ("F","Países Bajos","Irán",       "2026-06-15T18:00:00+00:00"),
-            ("F","Inglaterra","Países Bajos", "2026-06-19T18:00:00+00:00"),
-            ("F","Irán","Senegal",            "2026-06-19T21:00:00+00:00"),
-            ("F","Senegal","Países Bajos",    "2026-06-23T18:00:00+00:00"),
-            ("F","Irán","Inglaterra",         "2026-06-23T18:00:00+00:00"),
+            ("F","Países Bajos","Japón",           "2026-06-14T19:00:00+00:00"),
+            ("F","Suecia","Túnez",                 "2026-06-15T01:00:00+00:00"),
+            ("F","Países Bajos","Suecia",          "2026-06-20T16:00:00+00:00"),
+            ("F","Túnez","Japón",                  "2026-06-21T03:00:00+00:00"),
+            ("F","Japón","Suecia",                 "2026-06-25T22:00:00+00:00"),
+            ("F","Túnez","Países Bajos",           "2026-06-25T22:00:00+00:00"),
             # Grupo G
-            ("G","Colombia","Eslovaquia",     "2026-06-15T18:00:00+00:00"),
-            ("G","Ecuador","Qatar",           "2026-06-15T21:00:00+00:00"),
-            ("G","Colombia","Ecuador",        "2026-06-20T18:00:00+00:00"),
-            ("G","Qatar","Eslovaquia",        "2026-06-20T21:00:00+00:00"),
-            ("G","Eslovaquia","Ecuador",      "2026-06-24T21:00:00+00:00"),
-            ("G","Qatar","Colombia",          "2026-06-24T21:00:00+00:00"),
+            ("G","Bélgica","Egipto",               "2026-06-15T18:00:00+00:00"),
+            ("G","Irán","Nueva Zelanda",           "2026-06-16T00:00:00+00:00"),
+            ("G","Bélgica","Irán",                 "2026-06-21T18:00:00+00:00"),
+            ("G","Nueva Zelanda","Egipto",         "2026-06-22T00:00:00+00:00"),
+            ("G","Egipto","Irán",                  "2026-06-27T02:00:00+00:00"),
+            ("G","Nueva Zelanda","Bélgica",        "2026-06-27T02:00:00+00:00"),
             # Grupo H
-            ("H","Portugal","Polonia",        "2026-06-16T18:00:00+00:00"),
-            ("H","Chile","Australia",         "2026-06-16T21:00:00+00:00"),
-            ("H","Portugal","Chile",          "2026-06-20T18:00:00+00:00"),
-            ("H","Australia","Polonia",       "2026-06-20T21:00:00+00:00"),
-            ("H","Polonia","Chile",           "2026-06-24T18:00:00+00:00"),
-            ("H","Australia","Portugal",      "2026-06-24T18:00:00+00:00"),
+            ("H","España","Cabo Verde",            "2026-06-15T15:00:00+00:00"),
+            ("H","Arabia Saudita","Uruguay",       "2026-06-15T21:00:00+00:00"),
+            ("H","España","Arabia Saudita",        "2026-06-21T15:00:00+00:00"),
+            ("H","Uruguay","Cabo Verde",           "2026-06-21T21:00:00+00:00"),
+            ("H","Cabo Verde","Arabia Saudita",    "2026-06-26T23:00:00+00:00"),
+            ("H","Uruguay","España",               "2026-06-26T23:00:00+00:00"),
             # Grupo I
-            ("I","Italia","Argelia",          "2026-06-15T21:00:00+00:00"),
-            ("I","China","Trinidad y Tobago", "2026-06-15T18:00:00+00:00"),
-            ("I","Italia","China",            "2026-06-19T21:00:00+00:00"),
-            ("I","Trinidad y Tobago","Argelia","2026-06-19T18:00:00+00:00"),
-            ("I","Argelia","China",           "2026-06-23T18:00:00+00:00"),
-            ("I","Trinidad y Tobago","Italia","2026-06-23T18:00:00+00:00"),
+            ("I","Francia","Senegal",              "2026-06-16T18:00:00+00:00"),
+            ("I","Irak","Noruega",                 "2026-06-16T21:00:00+00:00"),
+            ("I","Francia","Irak",                 "2026-06-22T20:00:00+00:00"),
+            ("I","Noruega","Senegal",              "2026-06-22T23:00:00+00:00"),
+            ("I","Noruega","Francia",              "2026-06-26T18:00:00+00:00"),
+            ("I","Senegal","Irak",                 "2026-06-26T18:00:00+00:00"),
             # Grupo J
-            ("J","EE.UU.","Panamá",          "2026-06-13T21:00:00+00:00"),
-            ("J","Bahréin","Guatemala",       "2026-06-13T18:00:00+00:00"),
-            ("J","EE.UU.","Bahréin",         "2026-06-17T21:00:00+00:00"),
-            ("J","Guatemala","Panamá",        "2026-06-17T18:00:00+00:00"),
-            ("J","Panamá","Bahréin",          "2026-06-21T18:00:00+00:00"),
-            ("J","Guatemala","EE.UU.",        "2026-06-21T18:00:00+00:00"),
+            ("J","Argentina","Argelia",            "2026-06-17T00:00:00+00:00"),
+            ("J","Austria","Jordania",             "2026-06-17T03:00:00+00:00"),
+            ("J","Argentina","Austria",            "2026-06-22T16:00:00+00:00"),
+            ("J","Jordania","Argelia",             "2026-06-23T02:00:00+00:00"),
+            ("J","Argelia","Austria",              "2026-06-28T01:00:00+00:00"),
+            ("J","Jordania","Argentina",           "2026-06-28T01:00:00+00:00"),
             # Grupo K
-            ("K","Bélgica","Costa de Marfil","2026-06-14T21:00:00+00:00"),
-            ("K","Turquía","Indonesia",       "2026-06-14T18:00:00+00:00"),
-            ("K","Bélgica","Turquía",         "2026-06-18T21:00:00+00:00"),
-            ("K","Indonesia","Costa de Marfil","2026-06-18T18:00:00+00:00"),
-            ("K","Costa de Marfil","Turquía", "2026-06-22T18:00:00+00:00"),
-            ("K","Indonesia","Bélgica",       "2026-06-22T18:00:00+00:00"),
+            ("K","Portugal","DR Congo",            "2026-06-17T16:00:00+00:00"),
+            ("K","Uzbekistán","Colombia",          "2026-06-18T01:00:00+00:00"),
+            ("K","Portugal","Uzbekistán",          "2026-06-23T16:00:00+00:00"),
+            ("K","Colombia","DR Congo",            "2026-06-24T01:00:00+00:00"),
+            ("K","Colombia","Portugal",            "2026-06-27T22:30:00+00:00"),
+            ("K","DR Congo","Uzbekistán",          "2026-06-27T22:30:00+00:00"),
             # Grupo L
-            ("L","Dinamarca","Bosnia",        "2026-06-13T18:00:00+00:00"),
-            ("L","Filipinas","Guinea",        "2026-06-13T21:00:00+00:00"),
-            ("L","Dinamarca","Filipinas",     "2026-06-17T18:00:00+00:00"),
-            ("L","Guinea","Bosnia",           "2026-06-17T21:00:00+00:00"),
-            ("L","Bosnia","Filipinas",        "2026-06-21T21:00:00+00:00"),
-            ("L","Guinea","Dinamarca",        "2026-06-21T21:00:00+00:00"),
+            ("L","Inglaterra","Croacia",           "2026-06-17T19:00:00+00:00"),
+            ("L","Ghana","Panamá",                 "2026-06-17T22:00:00+00:00"),
+            ("L","Inglaterra","Ghana",             "2026-06-23T19:00:00+00:00"),
+            ("L","Panamá","Croacia",               "2026-06-23T22:00:00+00:00"),
+            ("L","Panamá","Inglaterra",            "2026-06-27T20:00:00+00:00"),
+            ("L","Croacia","Ghana",                "2026-06-27T20:00:00+00:00"),
         ]
         db.executemany(
             "INSERT INTO partidos (grupo,local,visitante,hora_inicio) VALUES (?,?,?,?)",
             partidos
         )
 
-    admin = db.execute("SELECT id FROM usuarios WHERE nombre='admin'").fetchone()
+        admin = db.execute("SELECT id FROM usuarios WHERE nombre='admin'").fetchone()
     if not admin:
         db.execute("INSERT INTO usuarios (nombre,password,es_admin) VALUES ('admin','admin123',1)")
     db.commit()
@@ -175,18 +174,30 @@ def partido_bloqueado(hora_inicio_str):
 app.jinja_env.globals["partido_bloqueado"] = partido_bloqueado
 
 BANDERAS = {
-    "México": "🇲🇽", "Ecuador": "🇪🇨", "Canadá": "🇨🇦", "Marruecos": "🇲🇦",
-    "Uruguay": "🇺🇾", "Kenia": "🇰🇪", "Portugal": "🇵🇹", "Zimbabwe": "🇿🇼",
-    "Alemania": "🇩🇪", "Japón": "🇯🇵", "Arabia Saudita": "🇸🇦", "N. Zelanda": "🇳🇿",
-    "España": "🇪🇸", "Serbia": "🇷🇸", "Brasil": "🇧🇷", "Suiza": "🇨🇭",
-    "Francia": "🇫🇷", "Colombia": "🇨🇴", "Argentina": "🇦🇷", "Croacia": "🇭🇷",
-    "Inglaterra": "🏴󠁧󠁢󠁥󠁮󠁧󠁿", "Senegal": "🇸🇳", "Países Bajos": "🇳🇱", "Irán": "🇮🇷",
-    "Eslovaquia": "🇸🇰", "Qatar": "🇶🇦", "Polonia": "🇵🇱", "Chile": "🇨🇱",
-    "Australia": "🇦🇺", "Italia": "🇮🇹", "Argelia": "🇩🇿", "China": "🇨🇳",
-    "Trinidad y Tobago": "🇹🇹", "EE.UU.": "🇺🇸", "Panamá": "🇵🇦",
-    "Bahréin": "🇧🇭", "Guatemala": "🇬🇹", "Bélgica": "🇧🇪",
-    "Costa de Marfil": "🇨🇮", "Turquía": "🇹🇷", "Indonesia": "🇮🇩",
-    "Dinamarca": "🇩🇰", "Bosnia": "🇧🇦", "Filipinas": "🇵🇭", "Guinea": "🇬🇳",
+    # Grupo A
+    "México": "🇲🇽", "Sudáfrica": "🇿🇦", "Corea del Sur": "🇰🇷", "Rep. Checa": "🇨🇿",
+    # Grupo B
+    "Canadá": "🇨🇦", "Bosnia y Herz.": "🇧🇦", "Qatar": "🇶🇦", "Suiza": "🇨🇭",
+    # Grupo C
+    "Brasil": "🇧🇷", "Marruecos": "🇲🇦", "Haití": "🇭🇹", "Escocia": "🏴󠁧󠁢󠁳󠁣󠁴󠁿",
+    # Grupo D
+    "EE.UU.": "🇺🇸", "Paraguay": "🇵🇾", "Australia": "🇦🇺", "Turquía": "🇹🇷",
+    # Grupo E
+    "Alemania": "🇩🇪", "Curazao": "🇨🇼", "Costa de Marfil": "🇨🇮", "Ecuador": "🇪🇨",
+    # Grupo F
+    "Países Bajos": "🇳🇱", "Japón": "🇯🇵", "Suecia": "🇸🇪", "Túnez": "🇹🇳",
+    # Grupo G
+    "Bélgica": "🇧🇪", "Egipto": "🇪🇬", "Irán": "🇮🇷", "Nueva Zelanda": "🇳🇿",
+    # Grupo H
+    "España": "🇪🇸", "Cabo Verde": "🇨🇻", "Arabia Saudita": "🇸🇦", "Uruguay": "🇺🇾",
+    # Grupo I
+    "Francia": "🇫🇷", "Senegal": "🇸🇳", "Irak": "🇮🇶", "Noruega": "🇳🇴",
+    # Grupo J
+    "Argentina": "🇦🇷", "Argelia": "🇩🇿", "Austria": "🇦🇹", "Jordania": "🇯🇴",
+    # Grupo K
+    "Portugal": "🇵🇹", "DR Congo": "🇨🇩", "Uzbekistán": "🇺🇿", "Colombia": "🇨🇴",
+    # Grupo L
+    "Inglaterra": "🏴󠁧󠁢󠁥󠁮󠁧󠁿", "Croacia": "🇭🇷", "Ghana": "🇬🇭", "Panamá": "🇵🇦",
 }
 app.jinja_env.globals["BANDERAS"] = BANDERAS
 
