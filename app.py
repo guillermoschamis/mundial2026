@@ -34,7 +34,7 @@ def init_db():
     count = db.execute("SELECT COUNT(*) FROM partidos").fetchone()[0]
     if count == 0:
         partidos = [
-            ("A","México","Sudáfrica","2026-06-11T18:00:00+00:00"),
+            ("A","México","Sudáfrica","2026-06-11T19:00:00+00:00"),
             ("A","Corea del Sur","Rep. Checa","2026-06-12T01:00:00+00:00"),
             ("A","Rep. Checa","Sudáfrica","2026-06-18T15:00:00+00:00"),
             ("A","México","Corea del Sur","2026-06-19T00:00:00+00:00"),
