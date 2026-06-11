@@ -396,6 +396,9 @@ def _sync_resultados():
     except Exception as e:
         return {"error": str(e)}
     actualizados = 0
+    if data.get("errors"):
+        return {"error": f"API: {data['errors']}"}
+    debug_info = f"resultados recibidos: {len(data.get('response', []))}"
     for m in data.get("response", []):
         fixture = m.get("fixture", {})
         estado = fixture.get("status", {}).get("short")
@@ -413,7 +416,7 @@ def _sync_resultados():
         if p:
             query(f"UPDATE partidos SET resultado={PH}, api_id={PH} WHERE id={PH}", (resultado, api_id, p["id"]), commit=True)
             actualizados += 1
-    return {"ok":True,"actualizados":actualizados}
+    return {"ok":True,"actualizados":actualizados,"debug":debug_info}
 
 @app.route("/api/sync-resultados", methods=["POST"])
 def sync_resultados():
