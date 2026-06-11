@@ -381,18 +381,16 @@ def admin():
 
 # ─── API: SYNC RESULTADOS ─────────────────────────────────────────────────────
 
-@app.route("/api/sync-resultados", methods=["POST"])
-def sync_resultados():
-    if not session.get("es_admin"): return jsonify({"error":"No autorizado"}), 403
+def _sync_resultados():
     api_key = get_config().get("api_key","").strip()
-    if not api_key: return jsonify({"error":"API key no configurada"}), 400
+    if not api_key: return {"error":"API key no configurada"}
     try:
         import urllib.request
         req = urllib.request.Request("https://api.football-data.org/v4/competitions/WC/matches?season=2026&stage=GROUP_STAGE", headers={"X-Auth-Token": api_key})
         with urllib.request.urlopen(req, timeout=10) as resp:
             data = json.loads(resp.read().decode())
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return {"error": str(e)}
     actualizados = 0
     for m in data.get("matches",[]):
         if m.get("status") not in ("FINISHED","IN_PLAY","PAUSED"): continue
@@ -409,7 +407,14 @@ def sync_resultados():
         if p:
             query(f"UPDATE partidos SET resultado={PH}, api_id={PH} WHERE id={PH}", (resultado, api_id, p["id"]), commit=True)
             actualizados += 1
-    return jsonify({"ok":True,"actualizados":actualizados})
+    return {"ok":True,"actualizados":actualizados}
+
+@app.route("/api/sync-resultados", methods=["POST"])
+def sync_resultados():
+    if not session.get("es_admin"): return jsonify({"error":"No autorizado"}), 403
+    resultado = _sync_resultados()
+    if "error" in resultado: return jsonify(resultado), 400
+    return jsonify(resultado)
 
 @app.route("/api/sync-horarios", methods=["POST"])
 def sync_horarios():
@@ -577,6 +582,24 @@ def auto_sync_horarios():
 with app.app_context():
     init_db()
     auto_sync_horarios()
+
+def _job_sync_resultados():
+    with app.app_context():
+        try:
+            r = _sync_resultados()
+            if r.get("actualizados"):
+                print(f"Auto-sync resultados: {r['actualizados']} actualizados.")
+        except Exception as e:
+            print(f"Auto-sync resultados error: {e}")
+
+try:
+    from apscheduler.schedulers.background import BackgroundScheduler
+    if get_config().get("api_key","").strip():
+        _scheduler = BackgroundScheduler(daemon=True)
+        _scheduler.add_job(_job_sync_resultados, "interval", minutes=2, id="sync_resultados")
+        _scheduler.start()
+except Exception as e:
+    print(f"No se pudo iniciar el sincronizador automático: {e}")
 
 if __name__ == "__main__":
     print("\n🏆 App del Mundial 2026\n   http://localhost:5000\n   Admin: admin / admin123\n")
