@@ -381,26 +381,32 @@ def admin():
 
 # ─── API: SYNC RESULTADOS ─────────────────────────────────────────────────────
 
+ESTADOS_CON_RESULTADO = {"1H","HT","2H","ET","BT","P","FT","AET","PEN","SUSP","INT"}
+
 def _sync_resultados():
     api_key = get_config().get("api_key","").strip()
     if not api_key: return {"error":"API key no configurada"}
     try:
         import urllib.request
-        req = urllib.request.Request("https://api.football-data.org/v4/competitions/WC/matches?season=2026&stage=GROUP_STAGE", headers={"X-Auth-Token": api_key})
-        with urllib.request.urlopen(req, timeout=10) as resp:
+        req = urllib.request.Request(
+            "https://v3.football.api-sports.io/fixtures?league=1&season=2026",
+            headers={"x-apisports-key": api_key})
+        with urllib.request.urlopen(req, timeout=15) as resp:
             data = json.loads(resp.read().decode())
     except Exception as e:
         return {"error": str(e)}
     actualizados = 0
-    for m in data.get("matches",[]):
-        if m.get("status") not in ("FINISHED","IN_PLAY","PAUSED"): continue
-        home = m.get("score",{}).get("fullTime",{}).get("home")
-        away = m.get("score",{}).get("fullTime",{}).get("away")
+    for m in data.get("response", []):
+        fixture = m.get("fixture", {})
+        estado = fixture.get("status", {}).get("short")
+        if estado not in ESTADOS_CON_RESULTADO: continue
+        goles = m.get("goals", {})
+        home, away = goles.get("home"), goles.get("away")
         if home is None or away is None: continue
         resultado = "1" if home > away else ("2" if away > home else "E")
-        api_id = m.get("id")
-        hn = m.get("homeTeam",{}).get("shortName","")
-        an = m.get("awayTeam",{}).get("shortName","")
+        api_id = fixture.get("id")
+        hn = m.get("teams", {}).get("home", {}).get("name", "")
+        an = m.get("teams", {}).get("away", {}).get("name", "")
         p = query(f"SELECT id FROM partidos WHERE api_id={PH}", (api_id,), fetchone=True)
         if not p:
             p = query(f"SELECT id FROM partidos WHERE local LIKE {PH} AND visitante LIKE {PH}", (f"%{hn[:4]}%", f"%{an[:4]}%"), fetchone=True)
@@ -423,18 +429,21 @@ def sync_horarios():
     if not api_key: return jsonify({"error":"API key no configurada"}), 400
     try:
         import urllib.request
-        req = urllib.request.Request("https://api.football-data.org/v4/competitions/WC/matches?season=2026&stage=GROUP_STAGE", headers={"X-Auth-Token": api_key})
-        with urllib.request.urlopen(req, timeout=10) as resp:
+        req = urllib.request.Request(
+            "https://v3.football.api-sports.io/fixtures?league=1&season=2026",
+            headers={"x-apisports-key": api_key})
+        with urllib.request.urlopen(req, timeout=15) as resp:
             data = json.loads(resp.read().decode())
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     actualizados = 0
-    for m in data.get("matches",[]):
-        utc_date = m.get("utcDate")
+    for m in data.get("response", []):
+        fixture = m.get("fixture", {})
+        utc_date = fixture.get("date")
         if not utc_date: continue
-        api_id = m.get("id")
-        hn = m.get("homeTeam",{}).get("shortName","")
-        an = m.get("awayTeam",{}).get("shortName","")
+        api_id = fixture.get("id")
+        hn = m.get("teams", {}).get("home", {}).get("name", "")
+        an = m.get("teams", {}).get("away", {}).get("name", "")
         p = query(f"SELECT id FROM partidos WHERE api_id={PH}", (api_id,), fetchone=True)
         if not p:
             p = query(f"SELECT id FROM partidos WHERE local LIKE {PH} AND visitante LIKE {PH}", (f"%{hn[:4]}%", f"%{an[:4]}%"), fetchone=True)
@@ -556,17 +565,20 @@ def auto_sync_horarios():
     if not api_key: return
     try:
         import urllib.request
-        req = urllib.request.Request("https://api.football-data.org/v4/competitions/WC/matches?season=2026&stage=GROUP_STAGE", headers={"X-Auth-Token": api_key.strip()})
-        with urllib.request.urlopen(req, timeout=10) as resp:
+        req = urllib.request.Request(
+            "https://v3.football.api-sports.io/fixtures?league=1&season=2026",
+            headers={"x-apisports-key": api_key.strip()})
+        with urllib.request.urlopen(req, timeout=15) as resp:
             data = json.loads(resp.read().decode())
         with app.app_context():
             actualizados = 0
-            for m in data.get("matches",[]):
-                utc_date = m.get("utcDate")
+            for m in data.get("response", []):
+                fixture = m.get("fixture", {})
+                utc_date = fixture.get("date")
                 if not utc_date: continue
-                api_id = m.get("id")
-                hn = m.get("homeTeam",{}).get("shortName","")
-                an = m.get("awayTeam",{}).get("shortName","")
+                api_id = fixture.get("id")
+                hn = m.get("teams", {}).get("home", {}).get("name", "")
+                an = m.get("teams", {}).get("away", {}).get("name", "")
                 p = query(f"SELECT id FROM partidos WHERE api_id={PH}", (api_id,), fetchone=True)
                 if not p:
                     p = query(f"SELECT id FROM partidos WHERE local LIKE {PH} AND visitante LIKE {PH}", (f"%{hn[:4]}%", f"%{an[:4]}%"), fetchone=True)
@@ -596,7 +608,7 @@ try:
     from apscheduler.schedulers.background import BackgroundScheduler
     if get_config().get("api_key","").strip():
         _scheduler = BackgroundScheduler(daemon=True)
-        _scheduler.add_job(_job_sync_resultados, "interval", minutes=2, id="sync_resultados")
+        _scheduler.add_job(_job_sync_resultados, "interval", minutes=15, id="sync_resultados")
         _scheduler.start()
 except Exception as e:
     print(f"No se pudo iniciar el sincronizador automático: {e}")
