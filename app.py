@@ -3,10 +3,8 @@ import os, json
 from datetime import datetime, timezone, timedelta
 
 from datetime import timedelta
-from datetime import timedelta
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "mundial2026-secreto")
-app.permanent_session_lifetime = timedelta(days=30)
 app.permanent_session_lifetime = timedelta(days=30)
 
 # ─── DB ADAPTER (PostgreSQL en Render, SQLite local) ──────────────────────────
@@ -252,7 +250,6 @@ def login():
         user = query(f"SELECT * FROM usuarios WHERE nombre={PH} AND password={PH}", (nombre,pwd), fetchone=True)
         if user:
             session.permanent = True
-            session.permanent = True
             session.update({"usuario_id":user["id"],"usuario_nombre":user["nombre"],"es_admin":user["es_admin"]})
             return redirect(url_for("pronosticos_view"))
         flash("Usuario o contraseña incorrectos.")
@@ -322,6 +319,18 @@ def pronosticos_view():
         partidos_cronologicos=partidos_cronologicos,
         mis_pronosticos=mis_pronosticos,
         modo=modo)
+
+@app.route("/partido/<int:partido_id>/pronosticos")
+def ver_pronosticos_partido(partido_id):
+    if "usuario_id" not in session: return jsonify({"error":"No autorizado"}), 401
+    p = query(f"SELECT * FROM partidos WHERE id={PH}", (partido_id,), fetchone=True)
+    if not p: return jsonify({"error":"Partido no encontrado"}), 404
+    if not partido_bloqueado(p["hora_inicio"]):
+        return jsonify({"error":"Los pronosticos se ven una vez que el partido arranca."})
+    rows = query(f"""SELECT u.nombre as nombre, pr.pronostico as pronostico
+                      FROM pronosticos pr JOIN usuarios u ON u.id=pr.usuario_id
+                      WHERE pr.partido_id={PH} ORDER BY u.nombre""", (partido_id,), fetchall=True)
+    return jsonify([{"nombre":r["nombre"],"pronostico":r["pronostico"]} for r in rows])
 
 # ─── TABLA ────────────────────────────────────────────────────────────────────
 
