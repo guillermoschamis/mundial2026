@@ -2,8 +2,12 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 import os, json
 from datetime import datetime, timezone, timedelta
 
+from datetime import timedelta
+from datetime import timedelta
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "mundial2026-secreto")
+app.permanent_session_lifetime = timedelta(days=30)
+app.permanent_session_lifetime = timedelta(days=30)
 
 # ─── DB ADAPTER (PostgreSQL en Render, SQLite local) ──────────────────────────
 
@@ -247,6 +251,8 @@ def login():
         pwd = request.form["password"]
         user = query(f"SELECT * FROM usuarios WHERE nombre={PH} AND password={PH}", (nombre,pwd), fetchone=True)
         if user:
+            session.permanent = True
+            session.permanent = True
             session.update({"usuario_id":user["id"],"usuario_nombre":user["nombre"],"es_admin":user["es_admin"]})
             return redirect(url_for("pronosticos_view"))
         flash("Usuario o contraseña incorrectos.")
