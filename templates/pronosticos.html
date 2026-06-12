@@ -27,6 +27,7 @@
         {% if mis_pronosticos.get(p.id)==p.resultado %}✓ Acertaste{% else %}✗ Fallaste{% endif %}
       </div>
       {% endif %}
+      <div style="font-size:.7rem;color:#555;text-align:center;margin-top:.2rem"><span class="ver-link" onclick="verPronos({{ p.id }}, '{{ p.local }} vs {{ p.visitante }}')" style="cursor:pointer;color:#c8a227;text-decoration:underline">Ver pronósticos</span></div>
     {% elif bloqueado %}
       {% set mi = mis_pronosticos.get(p.id) %}
       <div class="btns-resultado">

@@ -385,10 +385,13 @@ def _sync_resultados():
     api_key = get_config().get("api_key","").strip()
     if not api_key: return {"error":"API key no configurada"}
     try:
-        import urllib.request
+        import urllib.request, urllib.error
         req = urllib.request.Request("https://api.football-data.org/v4/competitions/WC/matches?season=2026&stage=GROUP_STAGE", headers={"X-Auth-Token": api_key})
         with urllib.request.urlopen(req, timeout=10) as resp:
             data = json.loads(resp.read().decode())
+    except urllib.error.HTTPError as e:
+        body = e.read().decode()
+        return {"error": f"HTTP {e.code}: {body}"}
     except Exception as e:
         return {"error": str(e)}
     actualizados = 0
