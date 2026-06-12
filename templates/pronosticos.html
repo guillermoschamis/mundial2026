@@ -17,10 +17,11 @@
   <div class="eq-local"><span class="bandera">{{ BANDERAS.get(p.local,"") }}</span><strong>{{ p.local }}</strong></div>
   <div class="partido-meta">
     {% if p.resultado %}
+      {% set mi = mis_pronosticos.get(p.id) %}
       <div class="btns-resultado">
-        <span class="btn-opcion {% if p.resultado=='1' %}sel-1{% endif %} {% if mis_pronosticos.get(p.id)=='1' and p.resultado=='1' %}acierto{% elif mis_pronosticos.get(p.id)=='1' %}fallo{% endif %}"></span>
-        <span class="btn-opcion {% if p.resultado=='E' %}sel-E{% endif %} {% if mis_pronosticos.get(p.id)=='E' and p.resultado=='E' %}acierto{% elif mis_pronosticos.get(p.id)=='E' %}fallo{% endif %}">E</span>
-        <span class="btn-opcion {% if p.resultado=='2' %}sel-2{% endif %} {% if mis_pronosticos.get(p.id)=='2' and p.resultado=='2' %}acierto{% elif mis_pronosticos.get(p.id)=='2' %}fallo{% endif %}"></span>
+        <span class="btn-opcion {% if p.resultado=='1' %}sel-1{% endif %} {% if mi=='1' %}mi-eleccion{% endif %}"></span>
+        <span class="btn-opcion {% if p.resultado=='E' %}sel-E{% endif %} {% if mi=='E' %}mi-eleccion{% endif %}">E</span>
+        <span class="btn-opcion {% if p.resultado=='2' %}sel-2{% endif %} {% if mi=='2' %}mi-eleccion{% endif %}"></span>
       </div>
       {% if mis_pronosticos.get(p.id) %}
       <div style="margin-top:.3rem;font-size:.7rem;text-align:center;color:{% if mis_pronosticos.get(p.id)==p.resultado %}#5cb85c{% else %}#d9534f{% endif %}">
@@ -102,13 +103,13 @@ async function verPronos(id, titulo) {
       document.getElementById('modal-contenido').innerHTML = `<p style="color:#d9534f">${data.error}</p>`;
       return;
     }
-    const labels = {'1':'Local','E':'Empate','2':'Visitante'};
+    const letras = {'1':'L','E':'E','2':'V'};
     const colors = {'1':'#1a4a8a','E':'#4a4a00','2':'#6a1a1a'};
     const html = data.length === 0
       ? '<p style="color:#666;font-size:.85rem">Nadie pronosticó este partido.</p>'
       : data.map(p => `<div style="display:flex;justify-content:space-between;align-items:center;padding:.4rem 0;border-bottom:1px solid #111d2a">
           <span style="font-size:.88rem">${p.nombre}</span>
-          <span style="background:${colors[p.pronostico]};padding:.2rem .6rem;border-radius:5px;font-size:.8rem;font-weight:700">${p.pronostico === 'E' ? 'E' : ''}</span>
+          <span style="background:${colors[p.pronostico]};padding:.2rem .6rem;border-radius:5px;font-size:.8rem;font-weight:700">${letras[p.pronostico]}</span>
         </div>`).join('');
     document.getElementById('modal-contenido').innerHTML = html;
   } catch(e) {
