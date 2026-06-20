@@ -580,11 +580,96 @@ def auto_sync_horarios():
     except Exception as e:
         print(f"Auto-sync error: {e}")
 
+HORARIOS_OFICIALES = [
+    ("A","México","Sudáfrica","2026-06-11T19:00:00+00:00"),
+    ("A","Corea del Sur","Rep. Checa","2026-06-12T02:00:00+00:00"),
+    ("A","Rep. Checa","Sudáfrica","2026-06-18T16:00:00+00:00"),
+    ("A","México","Corea del Sur","2026-06-19T01:00:00+00:00"),
+    ("A","Sudáfrica","Corea del Sur","2026-06-25T01:00:00+00:00"),
+    ("A","Rep. Checa","México","2026-06-25T01:00:00+00:00"),
+    ("B","Canadá","Bosnia y Herz.","2026-06-12T19:00:00+00:00"),
+    ("B","Qatar","Suiza","2026-06-13T19:00:00+00:00"),
+    ("B","Suiza","Bosnia y Herz.","2026-06-18T19:00:00+00:00"),
+    ("B","Canadá","Qatar","2026-06-18T22:00:00+00:00"),
+    ("B","Suiza","Canadá","2026-06-24T19:00:00+00:00"),
+    ("B","Bosnia y Herz.","Qatar","2026-06-24T19:00:00+00:00"),
+    ("C","Brasil","Marruecos","2026-06-13T22:00:00+00:00"),
+    ("C","Haití","Escocia","2026-06-14T01:00:00+00:00"),
+    ("C","Escocia","Marruecos","2026-06-19T22:00:00+00:00"),
+    ("C","Brasil","Haití","2026-06-20T00:30:00+00:00"),
+    ("C","Marruecos","Haití","2026-06-24T22:00:00+00:00"),
+    ("C","Escocia","Brasil","2026-06-24T22:00:00+00:00"),
+    ("D","EE.UU.","Paraguay","2026-06-13T01:00:00+00:00"),
+    ("D","Australia","Turquía","2026-06-14T04:00:00+00:00"),
+    ("D","EE.UU.","Australia","2026-06-19T19:00:00+00:00"),
+    ("D","Turquía","Paraguay","2026-06-20T04:00:00+00:00"),
+    ("D","Turquía","EE.UU.","2026-06-26T02:00:00+00:00"),
+    ("D","Paraguay","Australia","2026-06-26T02:00:00+00:00"),
+    ("E","Alemania","Curazao","2026-06-14T17:00:00+00:00"),
+    ("E","Costa de Marfil","Ecuador","2026-06-14T23:00:00+00:00"),
+    ("E","Alemania","Costa de Marfil","2026-06-20T20:00:00+00:00"),
+    ("E","Ecuador","Curazao","2026-06-21T00:00:00+00:00"),
+    ("E","Curazao","Costa de Marfil","2026-06-25T20:00:00+00:00"),
+    ("E","Ecuador","Alemania","2026-06-25T20:00:00+00:00"),
+    ("F","Países Bajos","Japón","2026-06-14T20:00:00+00:00"),
+    ("F","Suecia","Túnez","2026-06-15T02:00:00+00:00"),
+    ("F","Países Bajos","Suecia","2026-06-20T17:00:00+00:00"),
+    ("F","Túnez","Japón","2026-06-21T04:00:00+00:00"),
+    ("F","Túnez","Países Bajos","2026-06-25T23:00:00+00:00"),
+    ("F","Japón","Suecia","2026-06-25T23:00:00+00:00"),
+    ("G","Bélgica","Egipto","2026-06-15T19:00:00+00:00"),
+    ("G","Irán","Nueva Zelanda","2026-06-16T01:00:00+00:00"),
+    ("G","Bélgica","Irán","2026-06-21T19:00:00+00:00"),
+    ("G","Nueva Zelanda","Egipto","2026-06-22T01:00:00+00:00"),
+    ("G","Nueva Zelanda","Bélgica","2026-06-27T03:00:00+00:00"),
+    ("G","Egipto","Irán","2026-06-27T03:00:00+00:00"),
+    ("H","España","Cabo Verde","2026-06-15T16:00:00+00:00"),
+    ("H","Arabia Saudita","Uruguay","2026-06-15T22:00:00+00:00"),
+    ("H","España","Arabia Saudita","2026-06-21T16:00:00+00:00"),
+    ("H","Uruguay","Cabo Verde","2026-06-21T22:00:00+00:00"),
+    ("H","Cabo Verde","Arabia Saudita","2026-06-27T00:00:00+00:00"),
+    ("H","Uruguay","España","2026-06-27T00:00:00+00:00"),
+    ("I","Francia","Senegal","2026-06-16T19:00:00+00:00"),
+    ("I","Irak","Noruega","2026-06-16T22:00:00+00:00"),
+    ("I","Francia","Irak","2026-06-22T21:00:00+00:00"),
+    ("I","Noruega","Senegal","2026-06-23T00:00:00+00:00"),
+    ("I","Noruega","Francia","2026-06-26T19:00:00+00:00"),
+    ("I","Senegal","Irak","2026-06-26T19:00:00+00:00"),
+    ("J","Argentina","Argelia","2026-06-17T01:00:00+00:00"),
+    ("J","Austria","Jordania","2026-06-17T04:00:00+00:00"),
+    ("J","Argentina","Austria","2026-06-22T17:00:00+00:00"),
+    ("J","Jordania","Argelia","2026-06-23T03:00:00+00:00"),
+    ("J","Argelia","Austria","2026-06-28T02:00:00+00:00"),
+    ("J","Jordania","Argentina","2026-06-28T02:00:00+00:00"),
+    ("K","Portugal","DR Congo","2026-06-17T17:00:00+00:00"),
+    ("K","Uzbekistán","Colombia","2026-06-18T02:00:00+00:00"),
+    ("K","Portugal","Uzbekistán","2026-06-23T17:00:00+00:00"),
+    ("K","Colombia","DR Congo","2026-06-24T02:00:00+00:00"),
+    ("K","Colombia","Portugal","2026-06-27T23:30:00+00:00"),
+    ("K","DR Congo","Uzbekistán","2026-06-27T23:30:00+00:00"),
+    ("L","Inglaterra","Croacia","2026-06-17T20:00:00+00:00"),
+    ("L","Ghana","Panamá","2026-06-17T23:00:00+00:00"),
+    ("L","Inglaterra","Ghana","2026-06-23T20:00:00+00:00"),
+    ("L","Panamá","Croacia","2026-06-23T23:00:00+00:00"),
+    ("L","Panamá","Inglaterra","2026-06-27T21:00:00+00:00"),
+    ("L","Croacia","Ghana","2026-06-27T21:00:00+00:00"),
+]
+
+@app.route("/api/reset-horarios-oficiales", methods=["POST"])
+def reset_horarios_oficiales():
+    if not session.get("es_admin"): return jsonify({"error":"No autorizado"}), 403
+    actualizados = 0
+    for grupo, local, visitante, hora in HORARIOS_OFICIALES:
+        p = query(f"SELECT id FROM partidos WHERE local={PH} AND visitante={PH}", (local, visitante), fetchone=True)
+        if p:
+            query(f"UPDATE partidos SET hora_inicio={PH} WHERE id={PH}", (hora, p["id"]), commit=True)
+            actualizados += 1
+    return jsonify({"ok": True, "actualizados": actualizados})
+
 # ─── STARTUP ──────────────────────────────────────────────────────────────────
 
 with app.app_context():
     init_db()
-    auto_sync_horarios()
 
 def _job_sync_resultados():
     with app.app_context():
