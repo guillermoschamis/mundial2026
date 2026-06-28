@@ -468,6 +468,45 @@ def grupo_completo(grupo):
     r = con_res["c"] if USE_PG else con_res[0]
     return t > 0 and t == r
 
+def _obtener_posiciones_oficiales():
+    """Intenta obtener posiciones oficiales de football-data.org. Devuelve (primeros, segundos, terceros) o None si falla."""
+    api_key = get_config().get("api_key","").strip()
+    if not api_key: return None
+    try:
+        import urllib.request, urllib.error
+        req = urllib.request.Request(
+            "https://api.football-data.org/v4/competitions/WC/standings?season=2026",
+            headers={"X-Auth-Token": api_key})
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            data = json.loads(resp.read().decode())
+    except Exception:
+        return None
+    primeros, segundos, terceros = {}, {}, {}
+    for standing in data.get("standings", []):
+        if standing.get("type") != "TOTAL": continue
+        grupo = standing.get("group","").replace("GROUP_","")
+        tabla = standing.get("table",[])
+        def nombre_eq(t): return t.get("team",{}).get("shortName","") or t.get("team",{}).get("name","")
+        # mapear nombre corto de API a nombre en nuestra DB
+        def match_nombre(api_name):
+            p = query(f"SELECT local FROM partidos WHERE grupo={PH} AND (local LIKE {PH} OR visitante LIKE {PH})",
+                      (grupo, f"%{api_name[:4]}%", f"%{api_name[:4]}%"), fetchone=True)
+            if p: return p["local"]
+            all_eq = query(f"SELECT DISTINCT local FROM partidos WHERE grupo={PH}", (grupo,), fetchall=True)
+            for row in all_eq:
+                if api_name[:4].lower() in row["local"].lower(): return row["local"]
+            all_eq2 = query(f"SELECT DISTINCT visitante FROM partidos WHERE grupo={PH}", (grupo,), fetchall=True)
+            for row in all_eq2:
+                if api_name[:4].lower() in row["visitante"].lower(): return row["visitante"]
+            return api_name
+        if len(tabla) >= 1: primeros[grupo] = match_nombre(nombre_eq(tabla[0]))
+        if len(tabla) >= 2: segundos[grupo] = match_nombre(nombre_eq(tabla[1]))
+        if len(tabla) >= 3:
+            pts = tabla[2].get("points",0)
+            terceros[grupo] = (match_nombre(nombre_eq(tabla[2])), {"pts": pts})
+    if not primeros: return None
+    return primeros, segundos, terceros
+
 @app.route("/api/generar-16avos", methods=["POST"])
 def generar_16avos():
     if not session.get("es_admin"): return jsonify({"error":"No autorizado"}), 403
@@ -475,12 +514,19 @@ def generar_16avos():
     incompletos = [g for g in grupos if not grupo_completo(g)]
     if incompletos:
         return jsonify({"error": f"Grupos sin completar: {', '.join(incompletos)}"}), 400
-    primeros, segundos, terceros = {}, {}, {}
-    for g in grupos:
-        tabla = calcular_posiciones_grupo(g)
-        if len(tabla) >= 1: primeros[g] = tabla[0][0]
-        if len(tabla) >= 2: segundos[g] = tabla[1][0]
-        if len(tabla) >= 3: terceros[g] = (tabla[2][0], tabla[2][1])
+    # Intentar posiciones oficiales (con desempate por goles)
+    oficial = _obtener_posiciones_oficiales()
+    if oficial:
+        primeros, segundos, terceros = oficial
+        fuente = "oficial"
+    else:
+        primeros, segundos, terceros = {}, {}, {}
+        for g in grupos:
+            tabla = calcular_posiciones_grupo(g)
+            if len(tabla) >= 1: primeros[g] = tabla[0][0]
+            if len(tabla) >= 2: segundos[g] = tabla[1][0]
+            if len(tabla) >= 3: terceros[g] = (tabla[2][0], tabla[2][1])
+        fuente = "local"
     todos_terceros = sorted([(g,n,s) for g,(n,s) in terceros.items()], key=lambda x: (-x[2]["pts"], x[0]))
     mt = [t[1] for t in todos_terceros[:8]]
     def t3(i): return mt[i] if i < len(mt) else "Mejor 3°"
@@ -505,7 +551,7 @@ def generar_16avos():
     query(f"DELETE FROM partidos WHERE grupo={PH}", ("R32",), commit=True)
     ph = PH
     executemany(f"INSERT INTO partidos (grupo,local,visitante,hora_inicio) VALUES ({ph},{ph},{ph},{ph})", cruces)
-    return jsonify({"ok":True,"partidos":len(cruces)})
+    return jsonify({"ok":True,"partidos":len(cruces),"fuente":fuente})
 
 # ─── PWA ──────────────────────────────────────────────────────────────────────
 
