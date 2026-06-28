@@ -515,19 +515,13 @@ def generar_16avos():
     incompletos = [g for g in grupos if not grupo_completo(g)]
     if incompletos:
         return jsonify({"error": f"Grupos sin completar: {', '.join(incompletos)}"}), 400
-    # Intentar posiciones oficiales (con desempate por goles)
-    oficial = _obtener_posiciones_oficiales()
-    if oficial:
-        primeros, segundos, terceros = oficial
-        fuente = "oficial"
-    else:
-        primeros, segundos, terceros = {}, {}, {}
-        for g in grupos:
-            tabla = calcular_posiciones_grupo(g)
-            if len(tabla) >= 1: primeros[g] = tabla[0][0]
-            if len(tabla) >= 2: segundos[g] = tabla[1][0]
-            if len(tabla) >= 3: terceros[g] = (tabla[2][0], tabla[2][1])
-        fuente = "local"
+    primeros, segundos, terceros = {}, {}, {}
+    for g in grupos:
+        tabla = calcular_posiciones_grupo(g)
+        if len(tabla) >= 1: primeros[g] = tabla[0][0]
+        if len(tabla) >= 2: segundos[g] = tabla[1][0]
+        if len(tabla) >= 3: terceros[g] = (tabla[2][0], tabla[2][1])
+    fuente = "local"
     # 3° de cada grupo por nombre (para cruces fijos de FIFA)
     tn = {g: terceros[g][0] if g in terceros else f"3°{g}" for g in grupos}
     # Cruces oficiales FIFA WC2026 - posiciones 3° son FIJAS por grupo (no por ranking)
