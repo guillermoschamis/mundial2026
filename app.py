@@ -484,7 +484,8 @@ def _obtener_posiciones_oficiales():
     primeros, segundos, terceros = {}, {}, {}
     for standing in data.get("standings", []):
         if standing.get("type") != "TOTAL": continue
-        grupo = standing.get("group","").replace("GROUP_","")
+        grupo = (standing.get("group") or "").replace("GROUP_","")
+        if not grupo: continue
         tabla = standing.get("table",[])
         def nombre_eq(t): return t.get("team",{}).get("shortName","") or t.get("team",{}).get("name","")
         # mapear nombre corto de API a nombre en nuestra DB
