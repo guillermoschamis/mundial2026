@@ -511,42 +511,29 @@ def _obtener_posiciones_oficiales():
 @app.route("/api/generar-16avos", methods=["POST"])
 def generar_16avos():
     if not session.get("es_admin"): return jsonify({"error":"No autorizado"}), 403
-    grupos = ["A","B","C","D","E","F","G","H","I","J","K","L"]
-    incompletos = [g for g in grupos if not grupo_completo(g)]
-    if incompletos:
-        return jsonify({"error": f"Grupos sin completar: {', '.join(incompletos)}"}), 400
-    primeros, segundos, terceros = {}, {}, {}
-    for g in grupos:
-        tabla = calcular_posiciones_grupo(g)
-        if len(tabla) >= 1: primeros[g] = tabla[0][0]
-        if len(tabla) >= 2: segundos[g] = tabla[1][0]
-        if len(tabla) >= 3: terceros[g] = (tabla[2][0], tabla[2][1])
-    fuente = "local"
-    # 3° de cada grupo por nombre (para cruces fijos de FIFA)
-    tn = {g: terceros[g][0] if g in terceros else f"3°{g}" for g in grupos}
-    # Cruces oficiales FIFA WC2026 - posiciones 3° son FIJAS por grupo (no por ranking)
+    # Bracket oficial FIFA WC2026 - 16avos de final (horarios en UTC, ARG = UTC-3)
     cruces = [
-        ("R32",segundos.get("A","2°A"),  segundos.get("B","2°B"),  "2026-06-28T16:00:00+00:00"),
-        ("R32",primeros.get("C","1°C"),  segundos.get("F","2°F"),  "2026-06-29T16:00:00+00:00"),
-        ("R32",primeros.get("E","1°E"),  tn.get("D","3°D"),        "2026-06-29T19:30:00+00:00"),
-        ("R32",primeros.get("F","1°F"),  segundos.get("C","2°C"),  "2026-06-29T23:00:00+00:00"),
-        ("R32",segundos.get("E","2°E"),  segundos.get("I","2°I"),  "2026-06-30T16:00:00+00:00"),
-        ("R32",primeros.get("I","1°I"),  tn.get("F","3°F"),        "2026-06-30T21:00:00+00:00"),
-        ("R32",primeros.get("A","1°A"),  tn.get("E","3°E"),        "2026-06-30T23:00:00+00:00"),
-        ("R32",primeros.get("L","1°L"),  tn.get("K","3°K"),        "2026-07-01T16:00:00+00:00"),
-        ("R32",primeros.get("G","1°G"),  tn.get("I","3°I"),        "2026-07-01T17:00:00+00:00"),
-        ("R32",primeros.get("D","1°D"),  tn.get("B","3°B"),        "2026-07-01T21:00:00+00:00"),
-        ("R32",primeros.get("H","1°H"),  segundos.get("J","2°J"),  "2026-07-02T16:00:00+00:00"),
-        ("R32",primeros.get("B","1°B"),  tn.get("J","3°J"),        "2026-07-02T20:00:00+00:00"),
-        ("R32",segundos.get("K","2°K"),  segundos.get("L","2°L"),  "2026-07-02T23:00:00+00:00"),
-        ("R32",segundos.get("D","2°D"),  segundos.get("G","2°G"),  "2026-07-03T17:00:00+00:00"),
-        ("R32",primeros.get("J","1°J"),  segundos.get("H","2°H"),  "2026-07-03T22:00:00+00:00"),
-        ("R32",primeros.get("K","1°K"),  tn.get("L","3°L"),        "2026-07-03T20:30:00+00:00"),
+        ("R32","Sudáfrica",    "Canadá",        "2026-06-28T19:00:00+00:00"),  # Dom 28/6 16:00 ARG
+        ("R32","Brasil",       "Japón",          "2026-06-29T17:00:00+00:00"),  # Lun 29/6 14:00 ARG
+        ("R32","Alemania",     "Paraguay",       "2026-06-29T20:30:00+00:00"),  # Lun 29/6 17:30 ARG
+        ("R32","Países Bajos", "Marruecos",      "2026-06-30T01:00:00+00:00"),  # Lun 29/6 22:00 ARG
+        ("R32","Costa de Marfil","Noruega",      "2026-06-30T17:00:00+00:00"),  # Mar 30/6 14:00 ARG
+        ("R32","Francia",      "Suecia",         "2026-06-30T21:00:00+00:00"),  # Mar 30/6 18:00 ARG
+        ("R32","México",       "Ecuador",        "2026-07-01T01:00:00+00:00"),  # Mar 30/6 22:00 ARG
+        ("R32","Inglaterra",   "DR Congo",       "2026-07-01T16:00:00+00:00"),  # Mié 1/7 13:00 ARG
+        ("R32","Bélgica",      "Senegal",        "2026-07-01T20:00:00+00:00"),  # Mié 1/7 17:00 ARG
+        ("R32","EE.UU.",       "Bosnia y Herz.", "2026-07-02T00:00:00+00:00"),  # Mié 1/7 21:00 ARG
+        ("R32","España",       "Austria",        "2026-07-02T19:00:00+00:00"),  # Jue 2/7 16:00 ARG
+        ("R32","Portugal",     "Croacia",        "2026-07-02T23:00:00+00:00"),  # Jue 2/7 20:00 ARG
+        ("R32","Suiza",        "Argelia",        "2026-07-03T03:00:00+00:00"),  # Vie 3/7 00:00 ARG
+        ("R32","Australia",    "Egipto",         "2026-07-03T18:00:00+00:00"),  # Vie 3/7 15:00 ARG
+        ("R32","Argentina",    "Cabo Verde",     "2026-07-03T22:00:00+00:00"),  # Vie 3/7 19:00 ARG
+        ("R32","Colombia",     "Ghana",          "2026-07-04T01:30:00+00:00"),  # Vie 3/7 22:30 ARG
     ]
     query(f"DELETE FROM partidos WHERE grupo={PH}", ("R32",), commit=True)
     ph = PH
     executemany(f"INSERT INTO partidos (grupo,local,visitante,hora_inicio) VALUES ({ph},{ph},{ph},{ph})", cruces)
-    return jsonify({"ok":True,"partidos":len(cruces),"fuente":fuente})
+    return jsonify({"ok":True,"partidos":len(cruces)})
 
 # ─── PWA ──────────────────────────────────────────────────────────────────────
 
