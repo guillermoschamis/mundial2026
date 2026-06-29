@@ -1,5 +1,28 @@
 <div class="card" style="margin-bottom:1.2rem">
-  <h2 style="margin-top:0">👥 Usuarios registrados</h2>
+  <h2>✏️ Editar pronóstico (única vez por admin)</h2>
+<div class="card" style="margin-bottom:1.2rem">
+  <form method="POST" action="/admin/editar-pronostico" onsubmit="return confirm('¿Seguro? Esta edición solo se puede hacer una vez por pronóstico.')">
+    <div style="display:flex;flex-wrap:wrap;gap:.7rem;align-items:flex-end">
+      <div><label>Usuario</label>
+        <select name="usuario_id" required><option value="">— elegir —</option>
+        {% for u in usuarios %}<option value="{{ u.id }}">{{ u.nombre }}</option>{% endfor %}
+        </select></div>
+      <div><label>Partido</label>
+        <select name="partido_id" required><option value="">— elegir —</option>
+        {% for p in partidos_bloqueados %}<option value="{{ p.id }}">{{ p.local }} vs {{ p.visitante }}</option>{% endfor %}
+        </select></div>
+      <div><label>Pronóstico</label>
+        <select name="pronostico" required>
+          <option value="">—</option>
+          <option value="1">1 (gana local)</option>
+          <option value="E">E (empate)</option>
+          <option value="2">2 (gana visitante)</option>
+        </select></div>
+      <button type="submit" class="btn btn-primary btn-sm">Guardar</button>
+    </div>
+  </form>
+</div>
+<h2 style="margin-top:0">👥 Usuarios registrados</h2>
   <table>
     <thead><tr><th>Usuario</th><th>Pronósticos</th><th></th></tr></thead>
     <tbody>
