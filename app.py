@@ -111,9 +111,18 @@ def init_db():
     for stmt in stmts:
         query(stmt, commit=True)
     # Migración: agregar columna admin_editado si no existe
-    try:
-        query("ALTER TABLE pronosticos ADD COLUMN admin_editado INTEGER NOT NULL DEFAULT 0", commit=True)
-    except: pass
+    if USE_PG:
+        try:
+            db = get_db()
+            cur = db.cursor()
+            cur.execute("ALTER TABLE pronosticos ADD COLUMN admin_editado INTEGER NOT NULL DEFAULT 0")
+            db.commit()
+        except:
+            db.rollback()
+    else:
+        try:
+            query("ALTER TABLE pronosticos ADD COLUMN admin_editado INTEGER NOT NULL DEFAULT 0", commit=True)
+        except: pass
 
     count = query("SELECT COUNT(*) as c FROM partidos", fetchone=True)
     cnt = count["c"] if USE_PG else count[0]
