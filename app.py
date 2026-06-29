@@ -383,7 +383,6 @@ def admin():
         cnt = query(f"SELECT COUNT(*) as c FROM pronosticos WHERE usuario_id={PH}", (u["id"],), fetchone=True)
         usuarios.append({"id":u["id"],"nombre":u["nombre"],"total_pronos": cnt["c"] if USE_PG else cnt[0]})
     partidos_bloqueados = query("SELECT * FROM partidos ORDER BY hora_inicio,id", fetchall=True)
-    partidos_bloqueados = [p for p in partidos_bloqueados if partido_bloqueado(p["hora_inicio"])]
     return render_template("admin.html", partidos_por_grupo=partidos_por_grupo, api_key=get_config().get("api_key",""), usuarios=usuarios, partidos_bloqueados=partidos_bloqueados)
 
 # ─── API: SYNC RESULTADOS ─────────────────────────────────────────────────────
