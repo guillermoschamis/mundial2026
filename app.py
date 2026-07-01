@@ -550,6 +550,44 @@ def generar_16avos():
     executemany(f"INSERT INTO partidos (grupo,local,visitante,hora_inicio) VALUES ({ph},{ph},{ph},{ph})", cruces)
     return jsonify({"ok":True,"partidos":len(cruces)})
 
+
+@app.route("/admin/agregar-partido-fase", methods=["POST"])
+def agregar_partido_fase():
+    if not session.get("es_admin"): return redirect(url_for("index"))
+    fase    = request.form.get("fase","")
+    local   = request.form.get("local","").strip()
+    visit   = request.form.get("visitante","").strip()
+    fecha   = request.form.get("fecha","")   # YYYY-MM-DD
+    hora    = request.form.get("hora","")    # HH:MM (Argentina)
+    if not all([fase, local, visit, fecha, hora]):
+        flash("Completá todos los campos.")
+        return redirect(url_for("admin"))
+    # Convertir ARG (UTC-3) a UTC
+    try:
+        from datetime import datetime, timezone, timedelta
+        arg_dt = datetime.strptime(f"{fecha}T{hora}", "%Y-%m-%dT%H:%M")
+        utc_dt = arg_dt + timedelta(hours=3)
+        hora_utc = utc_dt.strftime("%Y-%m-%dT%H:%M:%S+00:00")
+    except:
+        flash("Fecha u hora inválida.")
+        return redirect(url_for("admin"))
+    query(f"INSERT INTO partidos (grupo,local,visitante,hora_inicio) VALUES ({PH},{PH},{PH},{PH})",
+          (fase, local, visit, hora_utc), commit=True)
+    flash(f"Partido agregado: {local} vs {visit}.")
+    return redirect(url_for("admin"))
+
+@app.route("/admin/limpiar-fase", methods=["POST"])
+def limpiar_fase():
+    if not session.get("es_admin"): return redirect(url_for("index"))
+    fase = request.form.get("fase","")
+    fases_permitidas = ["Cuartos","Semis","3° Puesto","Final"]
+    if fase not in fases_permitidas:
+        flash("Fase no válida.")
+        return redirect(url_for("admin"))
+    query(f"DELETE FROM partidos WHERE grupo={PH}", (fase,), commit=True)
+    flash(f"Partidos de '{fase}' eliminados.")
+    return redirect(url_for("admin"))
+
 # ─── PWA ──────────────────────────────────────────────────────────────────────
 
 @app.route("/admin/eliminar-usuario", methods=["POST"])

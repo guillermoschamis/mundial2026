@@ -1,5 +1,38 @@
 <div class="card" style="margin-bottom:1.2rem">
-  <h2>✏️ Editar pronóstico (única vez por admin)</h2>
+  <h2>➕ Agregar partidos de fases eliminatorias</h2>
+<div class="card" style="margin-bottom:1.2rem">
+  <form method="POST" action="/admin/agregar-partido-fase">
+    <div style="display:flex;flex-wrap:wrap;gap:.7rem;align-items:flex-end;margin-bottom:.7rem">
+      <div><label>Fase</label>
+        <select name="fase" required>
+          <option value="">— elegir —</option>
+          <option value="Cuartos">Cuartos de final</option>
+          <option value="Semis">Semifinales</option>
+          <option value="3° Puesto">Tercer puesto</option>
+          <option value="Final">Final</option>
+        </select></div>
+      <div><label>Local</label><input type="text" name="local" placeholder="Ej: Argentina" style="width:130px" required></div>
+      <div><label>Visitante</label><input type="text" name="visitante" placeholder="Ej: Francia" style="width:130px" required></div>
+      <div><label>Fecha (ARG)</label><input type="date" name="fecha" required></div>
+      <div><label>Hora ARG</label><input type="time" name="hora" required></div>
+      <button type="submit" class="btn btn-primary btn-sm">Agregar</button>
+    </div>
+  </form>
+  <details style="margin-top:.5rem">
+    <summary style="cursor:pointer;color:#d9534f;font-size:.82rem">🗑 Limpiar fase completa</summary>
+    <form method="POST" action="/admin/limpiar-fase" style="margin-top:.5rem;display:flex;gap:.5rem;align-items:center" onsubmit="return confirm('¿Eliminar todos los partidos de esa fase?')">
+      <select name="fase">
+        <option value="Cuartos">Cuartos de final</option>
+        <option value="Semis">Semifinales</option>
+        <option value="3° Puesto">Tercer puesto</option>
+        <option value="Final">Final</option>
+      </select>
+      <button type="submit" class="btn btn-sm" style="background:#d9534f;color:#fff">Eliminar</button>
+    </form>
+  </details>
+</div>
+
+<h2>✏️ Editar pronóstico (única vez por admin)</h2>
 <div class="card" style="margin-bottom:1.2rem">
   <form method="POST" action="/admin/editar-pronostico" onsubmit="return confirm('¿Seguro? Esta edición solo se puede hacer una vez por pronóstico.')">
     <div style="display:flex;flex-wrap:wrap;gap:.7rem;align-items:flex-end">
