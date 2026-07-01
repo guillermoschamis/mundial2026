@@ -6,6 +6,7 @@
       <div><label>Fase</label>
         <select name="fase" required>
           <option value="">— elegir —</option>
+          <option value="Octavos">Octavos de final</option>
           <option value="Cuartos">Cuartos de final</option>
           <option value="Semis">Semifinales</option>
           <option value="3° Puesto">Tercer puesto</option>
@@ -22,6 +23,7 @@
     <summary style="cursor:pointer;color:#d9534f;font-size:.82rem">🗑 Limpiar fase completa</summary>
     <form method="POST" action="/admin/limpiar-fase" style="margin-top:.5rem;display:flex;gap:.5rem;align-items:center" onsubmit="return confirm('¿Eliminar todos los partidos de esa fase?')">
       <select name="fase">
+        <option value="Octavos">Octavos de final</option>
         <option value="Cuartos">Cuartos de final</option>
         <option value="Semis">Semifinales</option>
         <option value="3° Puesto">Tercer puesto</option>

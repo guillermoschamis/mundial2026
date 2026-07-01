@@ -580,7 +580,7 @@ def agregar_partido_fase():
 def limpiar_fase():
     if not session.get("es_admin"): return redirect(url_for("index"))
     fase = request.form.get("fase","")
-    fases_permitidas = ["Cuartos","Semis","3° Puesto","Final"]
+    fases_permitidas = ["Octavos","Cuartos","Semis","3° Puesto","Final"]
     if fase not in fases_permitidas:
         flash("Fase no válida.")
         return redirect(url_for("admin"))
